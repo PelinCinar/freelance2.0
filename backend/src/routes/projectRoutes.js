@@ -14,5 +14,7 @@ router.post('/',authMiddleware.verifyAccessToken,checkRole(ROLES.EMPLOYER), proj
 router.get('/',authMiddleware.verifyAccessToken, projectController.getProjects);
 router.put('/:id',  authMiddleware.verifyAccessToken,checkRole(ROLES.EMPLOYER), projectController.updateProject);
 router.delete('/:id', authMiddleware.verifyAccessToken, checkRole(ROLES.EMPLOYER), projectController.deleteProject);
+router.put('/:id/complete', authMiddleware.verifyAccessToken, checkRole(ROLES.EMPLOYER), projectController.completeProject);
+router.put('/:id/approve', authMiddleware.verifyAccessToken, checkRole(ROLES.EMPLOYER), projectController.approveProject);
 
 module.exports = router;

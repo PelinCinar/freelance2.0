@@ -16,6 +16,38 @@ const createBid = async (req, res) => {
       });
     }
 
+    if (project.status === "closed") {
+      return res.status(400).json({
+        success: false,
+        message: "Bu projeye teklif verilemez çünkü proje kapatılmış.",
+      });
+    }
+
+    if (project.status === "in-progress") {
+      return res.status(400).json({
+        success: false,
+        message: "Bu projeye teklif verilemez çünkü proje şu anda yürütülüyor.",
+      });
+    }
+
+    if (project.status === "completed") {
+      return res.status(400).json({
+        success: false,
+        message: "Bu projeye teklif verilemez çünkü proje tamamlanmış.",
+      });
+    }
+
+    const existingBid = await Bid.findOne({
+      project: projectId,
+      freelancer: freelancerId,
+    });
+    if (existingBid) {
+      return res.status(400).json({
+        success: false,
+        message: "Bu projeye zaten teklif verdiniz.",
+      });
+    }
+
     // Teklif oluşturalımm
     const bid = await Bid.create({
       project: projectId,
@@ -57,12 +89,10 @@ const getBidsByProject = async (req, res) => {
 
     if (project.employer.toString() !== req.user.id) {
       //işverenin kim olduğunu kontrol edelim
-      return res
-        .status(401)
-        .json({
-          success: false,
-          message: "Bu projeye ait teklifleri görme yetkiniz yok.",
-        });
+      return res.status(401).json({
+        success: false,
+        message: "Bu projeye ait teklifleri görme yetkiniz yok.",
+      });
     }
 
     // Teklifleri al
@@ -100,12 +130,10 @@ const updateBid = async (req, res) => {
 
     // Teklif sahibi freelancer'ı kontrol et
     if (bid.freelancer.toString() !== req.user.id) {
-      return res
-        .status(401)
-        .json({
-          success: false,
-          message: "Bu teklifi güncelleme yetkiniz yok.",
-        });
+      return res.status(401).json({
+        success: false,
+        message: "Bu teklifi güncelleme yetkiniz yok.",
+      });
     }
 
     // Teklifi güncelle
@@ -169,28 +197,21 @@ const acceptBid = async (req, res) => {
   try {
     const { bidId } = req.params;
 
-    console.log("Gelen bidId:", bidId);
-
-    // Teklifi ve ilgili projeyi getiriyoruz
     const bid = await Bid.findById(bidId).populate("project");
 
     if (!bid) {
-      console.log("Teklif veritabanında bulunamadı.");
       return res.status(404).json({
         success: false,
         message: "Teklif bulunamadı.",
       });
     }
 
-    console.log("Teklifin gerçek proje ID'si:", bid.project._id.toString());
-
-    // Teklifin bağlı olduğu projeyi al
     const project = bid.project;
 
     if (!project) {
       return res.status(404).json({
         success: false,
-        message: "Teklifin bağlı olduğu proje bulunamadı.",
+        message: "Proje bulunamadı.",
       });
     }
 
@@ -198,17 +219,14 @@ const acceptBid = async (req, res) => {
     bid.status = "accepted";
     await bid.save();
 
-    // Proje status'ünü "closed" olarak güncelle
-    project.status = "closed";
-
-    // Kabul edilen teklifi projeye ekleyelim
+    // Proje durumunu 'in-progress' yap
+    project.status = "in-progress"; // veya projeyi başlangıçta 'in-progress' olarak güncelleylimm
     project.acceptedBid = bid._id;
-
     await project.save();
 
     return res.status(200).json({
       success: true,
-      message: "Teklif başarıyla kabul edildi ve proje kapatıldı.",
+      message: "Teklif başarıyla kabul edildi ve proje başlatıldı.",
       data: bid,
     });
   } catch (error) {
@@ -219,7 +237,6 @@ const acceptBid = async (req, res) => {
     });
   }
 };
-
 const rejectBid = async (req, res) => {
   try {
     const { bidId } = req.params; //urldeen bidIdmiz alalımm
@@ -274,7 +291,6 @@ const rejectBid = async (req, res) => {
     });
   }
 };
-
 
 module.exports = {
   createBid,

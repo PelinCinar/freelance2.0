@@ -172,39 +172,47 @@ const completeProject = async (req, res) => {
 //! Proje onaylama (Employer, projeyi onaylar)
 const approveProject = async (req, res) => {
   try {
-    const { id } = req.params; // Proje ID'sini almak için
-    const userId = req.user.id; // authenticated user'dan userId'yi almak
+    const { id } = req.params;
+    const userId = req.user.id;
 
-    // Projeyi bulalım
     const project = await Project.findById(id);
     if (!project) {
-      return res.status(404).json({ success: false, message: "Proje bulunamadı." });
+      return res.status(404).json({ 
+        success: false, 
+        message: "Proje bulunamadı." 
+      });
     }
 
-    // Proje sahibinin (Employer) doğruluğunu kontrol edelim
     if (project.employer.toString() !== userId) {
-      return res.status(403).json({ success: false, message: "Bu projeyi onaylama yetkiniz yok." });
+      return res.status(403).json({ 
+        success: false, 
+        message: "Bu projeyi onaylama yetkiniz yok." 
+      });
     }
 
-    // Proje teslim edilmedi mi kontrol edelim
     if (!project.isSubmitted) {
-      return res.status(400).json({ success: false, message: "Proje teslim edilmedi." });
+      return res.status(400).json({ 
+        success: false, 
+        message: "Proje teslim edilmedi." 
+      });
     }
 
-    // Projeyi onaylıyoruz
+    // Projeyi onayla
     project.isApproved = true;
-    project.status = "completed"; // Proje tamamlandı durumu
-
+    project.status = "completed";
     await project.save();
 
     res.status(200).json({
       success: true,
-      message: "Proje başarıyla onaylandı.",
+      message: "Proje başarıyla onaylandı. Artık yorum yapabilirsiniz.",
       project: project
     });
   } catch (error) {
     console.error("Onaylama hatası:", error);
-    res.status(500).json({ success: false, message: "Proje onaylanırken bir hata oluştu." });
+    res.status(500).json({ 
+      success: false, 
+      message: "Proje onaylanırken bir hata oluştu." 
+    });
   }
 };
 

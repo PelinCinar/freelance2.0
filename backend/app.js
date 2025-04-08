@@ -13,6 +13,8 @@ const userRoutes = require("./src/routes/userRoutes.js");
 const projectRoutes = require("./src/routes/projectRoutes.js");  
 const bidRoutes = require("./src/routes/bidRoutes.js");  
 const uploadRoutes = require("./src/routes/uploadRoutes.js");
+const reviewRoutes = require("./src/routes/reviewRoutes.js");
+
 const path = require('path');
 
 const app = express();
@@ -27,6 +29,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/projects", projectRoutes); 
 app.use("/api/bids", bidRoutes); 
 app.use("/api/upload", uploadRoutes);
+app.use("/api", reviewRoutes);
 app.use('/uploads', express.static('uploads'));//uploads klasöründeki dosyaları statik olarak sunar vee  tarayıcıya gelen istekler doğru şekilde işler
 
 

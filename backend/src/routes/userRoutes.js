@@ -51,39 +51,43 @@ router.get("/", authMiddleware.verifyAccessToken, userController.getProfile);
 
 /**
  * @swagger
- /api/users/update-profile:
-  put:
-    summary: Kullanıcı Profilini Güncelle
-    description: Kullanıcı profil bilgilerini günceller. Kullanıcı kimliği doğrulama ile yapılmalıdır.
-    tags:
-      - Kullanıcı
-    security:
-      - bearerAuth: []
-    requestBody:
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              name:
-                type: string
-              email:
-                type: string
-              password:
-                type: string
-    responses:
-      200:
-        description: Profil başarıyla güncellendi.
-      400:
-        description: Geçersiz parametreler veya boş alanlar.
-      401:
-        description: Kimlik doğrulama hatası (Token geçersiz veya eksik).
-      404:
-        description: Kullanıcı bulunamadı.
-      500:
-        description: Sunucu hatası.
+ * /api/users/update-profile:
+ *   put:
+ *     summary: Kullanıcı Profilini Güncelle
+ *     description: Kullanıcı profil bilgilerini günceller. Kullanıcı kimliği doğrulama ile yapılmalıdır.
+ *     tags:
+ *       - Kullanıcı
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Profil başarıyla güncellendi.
+ *       400:
+ *         description: Geçersiz parametreler veya boş alanlar.
+ *       401:
+ *         description: Kimlik doğrulama hatası (Token geçersiz veya eksik).
+ *       404:
+ *         description: Kullanıcı bulunamadı.
+ *       500:
+ *         description: Sunucu hatası.
  */
 
-router.put("/update-profile", authMiddleware.verifyAccessToken, userController.updateProfile);
+router.put(
+  "/update-profile",
+  authMiddleware.verifyAccessToken,
+  userController.updateProfile
+);
 
 module.exports = router;

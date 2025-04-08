@@ -97,6 +97,12 @@ const updateProjectRating = async (projectId) => {
       'rating.average': average,
       'rating.count': reviews.length
     });
+  } else {
+    // Eğer hiç yorum yoksa, rating'i sıfırlayabiliriz
+    await Project.findByIdAndUpdate(projectId, {
+      'rating.average': 0,
+      'rating.count': 0
+    });
   }
 };
 
@@ -149,9 +155,44 @@ const getUserReviews = async (req, res) => {
     });
   }
 };
+// Yorum silme işlemi
+const deleteReview = async (req, res) => {
+  try {
+    const { projectId, reviewId } = req.params;
+
+    // Yorumun var olup olmadığını kontrol et
+    const review = await Review.findOne({ _id: reviewId, project: projectId });
+    
+    if (!review) {
+      return res.status(404).json({
+        success: false,
+        message: "Yorum bulunamadı."
+      });
+    }
+
+    // Silme işlemi
+    await Review.findByIdAndDelete(reviewId);
+
+    // Projenin rating ortalamasını güncelle
+    await updateProjectRating(projectId);
+
+    res.status(200).json({
+      success: true,
+      message: "Yorum başarıyla silindi."
+    });
+  } catch (error) {
+    console.error("Yorum silme hatası:", error);
+    res.status(500).json({
+      success: false,
+      message: "Yorum silinirken bir hata oluştu."
+    });
+  }
+};
+
 
 module.exports = {
   createReview,
   getProjectReviews,
-  getUserReviews
+  getUserReviews,
+  deleteReview
 };

@@ -23,5 +23,11 @@ router.get(
   authMiddleware.verifyAccessToken,
   reviewController.getUserReviews
 );
+// Yorum silme
+router.delete(
+  '/projects/:projectId/reviews/:reviewId',
+  authMiddleware.verifyAccessToken,
+  reviewController.deleteReview
+);
 
 module.exports = router;

@@ -6,7 +6,7 @@ const RefreshToken = require("../models/RefreshToken.js");
 const verifyAccessToken = (req, res, next) => {
   // Cookie üzerinden access token alıyoruz
   const token = req.cookies.accessToken;
-
+  // console.log("Access token:", token);
   // Eğer token yoksa 403 hatası döndürüyoruz
   if (!token) {
     return res.status(403).json({ message: "Access token zorunludur." });
@@ -21,6 +21,7 @@ const verifyAccessToken = (req, res, next) => {
     return res.status(401).json({ message: "Geçersiz veya süresi dolmuş access token." });
   }
 };
+
 
 // Refresh token doğrulama middleware'i
 const verifyRefreshToken = async (req, res, next) => {

@@ -8,7 +8,7 @@ const { hashPassword } = require("../utils/passwordUtils"); // Utils dosyanı da
 //!Token oluştruma fonk.
 const generateTokens = (user) => {
   const accessTokenPayload = {
-    id: user._id,
+    _id: user._id,
     name: user.name, 
     email: user.email,
     // password:user.password,
@@ -100,13 +100,13 @@ const login = async (req, res) => {
     res.cookie("accessToken", tokens.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "lax",
       maxAge: 15 * 60 * 1000, //15dk
     });
     res.cookie("refreshToken", tokens.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "lax",
       path: "/api/auth/refresh-token",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 gün
     });

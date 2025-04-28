@@ -9,7 +9,7 @@ const createProject = async (req, res) => {
       title,
       description,
       budget,
-      employer: req.user.id,
+      employer: req.user._id,
       // status default olarak 'open' kalacak
     });
 
@@ -29,7 +29,7 @@ const createProject = async (req, res) => {
 // Tüm projeleri getir
 const getProjects = async (req, res) => {
   try {
-    const projects = await Project.find().populate("employer", "name email");
+    const projects = await Project.find({ employer: req.user._id }).populate("employer", "name email");
 
     res.status(200).json({
       success: true,

@@ -1,4 +1,5 @@
 const Project = require("../models/Project.js");
+const Bid = require("../models/Bid.js");
 
 // Proje oluşturma (default status: 'open')
 const createProject = async (req, res) => {
@@ -29,7 +30,10 @@ const createProject = async (req, res) => {
 // Tüm projeleri getir
 const getProjects = async (req, res) => {
   try {
-    const projects = await Project.find({ employer: req.user._id }).populate("employer", "name email");
+    const projects = await Project.find({ status: "open" }).populate(
+      "employer",
+      "name email"
+    );
 
     res.status(200).json({
       success: true,
@@ -139,19 +143,24 @@ const completeProject = async (req, res) => {
       } else {
         return res.status(400).json({
           success: false,
-          message: "Proje tamamlanmamış. Lütfen önce freelancer'ın projeyi teslim etmesini bekleyin.",
+          message:
+            "Proje tamamlanmamış. Lütfen önce freelancer'ın projeyi teslim etmesini bekleyin.",
         });
       }
     }
 
     // Freelancer, projeyi teslim ediyor
-    if (project.status === "in progress" && project.freelancer.toString() === req.user.id) {
+    if (
+      project.status === "in progress" &&
+      project.freelancer.toString() === req.user.id
+    ) {
       project.status = "completed"; // Freelancer projeyi teslim etti
       await project.save();
 
       return res.status(200).json({
         success: true,
-        message: "Proje başarıyla teslim edildi. Employer tarafından onaylanabilir.",
+        message:
+          "Proje başarıyla teslim edildi. Employer tarafından onaylanabilir.",
         data: project,
       });
     }
@@ -177,23 +186,23 @@ const approveProject = async (req, res) => {
 
     const project = await Project.findById(id);
     if (!project) {
-      return res.status(404).json({ 
-        success: false, 
-        message: "Proje bulunamadı." 
+      return res.status(404).json({
+        success: false,
+        message: "Proje bulunamadı.",
       });
     }
 
     if (project.employer.toString() !== userId) {
-      return res.status(403).json({ 
-        success: false, 
-        message: "Bu projeyi onaylama yetkiniz yok." 
+      return res.status(403).json({
+        success: false,
+        message: "Bu projeyi onaylama yetkiniz yok.",
       });
     }
 
     if (!project.isSubmitted) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Proje teslim edilmedi." 
+      return res.status(400).json({
+        success: false,
+        message: "Proje teslim edilmedi.",
       });
     }
 
@@ -205,16 +214,50 @@ const approveProject = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Proje başarıyla onaylandı. Artık yorum yapabilirsiniz.",
-      project: project
+      project: project,
     });
   } catch (error) {
     console.error("Onaylama hatası:", error);
-    res.status(500).json({ 
-      success: false, 
-      message: "Proje onaylanırken bir hata oluştu." 
+    res.status(500).json({
+      success: false,
+      message: "Proje onaylanırken bir hata oluştu.",
     });
   }
 };
+
+const getMyProjects = async (req, res) => {
+  try {
+    const projects = await Project.find({ employer: req.user._id });
+
+    res.status(200).json({
+      success: true,
+      data: projects,
+    });
+  } catch (err) {
+    console.error("Kendi projelerini alırken hata:", err);
+    res.status(500).json({
+      success: false,
+      message: "Projeler alınırken bir hata oluştu.",
+    });
+  }
+};
+// Belirli bir projeyi ID'ye göre getir
+const getProjectById = async (req, res) => {
+  const { id } = req.params; // This will capture the project ID from the route
+  try {
+    const project = await Project.findById(id); // Assuming you're using Mongoose
+    if (!project) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Project not found" });
+    }
+    return res.json({ success: true, data: project });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+
 
 
 
@@ -224,5 +267,7 @@ module.exports = {
   updateProject,
   deleteProject,
   completeProject,
-  approveProject
+  approveProject,
+  getMyProjects,
+  getProjectById,
 };

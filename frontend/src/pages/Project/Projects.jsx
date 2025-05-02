@@ -8,14 +8,17 @@ const Projects = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const res = await fetch("http://localhost:8080/api/projects/", {
-          credentials: "include",
-        });
+        const res = await fetch(
+          "http://localhost:8080/api/projects/my-projects",
+          {
+            credentials: "include",
+          }
+        );
 
         const data = await res.json();
 
         if (data.success) {
-          setProjects(data.data); 
+          setProjects(data.data);
         } else {
           console.error("Projeler alınamadı:", data.message);
         }

@@ -90,4 +90,6 @@ router.put(
   userController.updateProfile
 );
 
+// router.get("/me", authMiddleware.verifyAccessToken, userController.getCurrentUser);
+
 module.exports = router;

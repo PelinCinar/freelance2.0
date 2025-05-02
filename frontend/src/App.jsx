@@ -4,11 +4,13 @@ import { HomeRoutes } from './routes/HomeRoutes';
 import { AuthRoutes } from './routes/AuthRoutes'; 
 import { EmployerRoutes } from './routes/EmployerRoutes'; 
 import { ChatRoutes } from './routes/ChatRoutes';
+import { FreelancerRoutes } from './routes/FreelancerRoutes';
 
 const router = createBrowserRouter([
   HomeRoutes,  
   AuthRoutes,  
   ...EmployerRoutes,
+  ...FreelancerRoutes,
   ChatRoutes
 ]);
 

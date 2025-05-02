@@ -1,8 +1,8 @@
 import React from "react";
 import { Route } from "react-router-dom";
 import EmployerLayout from "../layouts/EmployerLayout"; // EmployerLayout import et
-import EmployerDashboard from "../pages/Employer/EmployerDashboardPage"; 
-import Projects from "../pages/Project/Projects"
+import EmployerDashboard from "../pages/Employer/EmployerDashboardPage";
+import Projects from "../pages/Project/Projects";
 import CardDetail from "../components/Employer/Card/CardDetail";
 export const EmployerRoutes = [
   {
@@ -14,11 +14,11 @@ export const EmployerRoutes = [
         element: <EmployerDashboard />,
       },
       {
-        path: "projects", 
+        path: "projects",
         element: <Projects />,
       },
       {
-        path: "projects/:id", // ✅ 
+        path: "projects/:id", // ✅
         element: <CardDetail />,
       },
     ],

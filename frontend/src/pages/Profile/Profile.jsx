@@ -91,6 +91,20 @@ export default function Profile() {
             </Button>
           </div>
         )}
+         {/* İşveren paneline yönlendirme butonu */}
+         {user.role === "freelancer" && (
+          <div className="mt-6">
+            <Button
+              type="default"
+              style={{ backgroundColor: "#52c41a", color: "white", borderColor: "#52c41a" }}
+              onClick={() => navigate("/freelancer-panel/dashboard")}
+              block
+            >
+                   Freelancer Paneline Git
+
+            </Button>
+          </div>
+        )}
       </Card>
     </div>
   );

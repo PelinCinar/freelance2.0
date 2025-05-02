@@ -1,8 +1,7 @@
-import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { Button, message } from "antd";
 import { io } from "socket.io-client";
-import { useNavigate } from "react-router-dom"; // useNavigate'i import ediyoruz
 
 // Socket.io'yu başlatıyoruz
 const socket = io("http://localhost:8080");
@@ -17,14 +16,12 @@ const CardDetail = () => {
   useEffect(() => {
     const fetchProject = async () => {
       try {
-        const res = await fetch("http://localhost:8080/api/projects/", {
+        const res = await fetch(`http://localhost:8080/api/projects/${id}`, {
           credentials: "include",
         });
         const data = await res.json();
         if (data.success) {
-          // Projeyi buluyoruz
-          const found = data.data.find((p) => p._id === id);
-          setProject(found);
+          setProject(data.data); // Projeyi set ediyoruz
         } else {
           message.error("Projeler alınamadı.");
         }

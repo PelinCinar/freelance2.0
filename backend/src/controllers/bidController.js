@@ -5,7 +5,7 @@ const Project = require("../models/Project");
 const createBid = async (req, res) => {
   try {
     const { projectId, amount, message } = req.body; //teklif verilerini alalum
-    const freelancerId = req.user.id; //giriş yapan freelancerımızı idsini de alalımm
+    const freelancerId = req.user._id; //giriş yapan freelancerımızı idsini de alalımm
 
     // Projeyi bulalımm
     const project = await Project.findById(projectId);
@@ -120,41 +120,39 @@ const updateBid = async (req, res) => {
     const { amount, message } = req.body;
     const bidId = req.params.id;
 
-    // Teklif var mı kontrol et
-    const bid = await Bid.findById(bidId);
+    const bid = await Bid.findById(bidId).populate("project");
     if (!bid) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Teklif bulunamadı." });
+      return res.status(404).json({ success: false, message: "Teklif bulunamadı." });
     }
 
-    // Teklif sahibi freelancer'ı kontrol et
-    if (bid.freelancer.toString() !== req.user.id) {
-      return res.status(401).json({
+    if (bid.status === "accepted") {
+      return res.status(400).json({
         success: false,
-        message: "Bu teklifi güncelleme yetkiniz yok.",
+        message: "Bu teklif kabul edilmiş, güncellenemez.",
       });
     }
 
-    // Teklifi güncelle
-    bid.amount = amount || bid.amount;
-    bid.message = message || bid.message;
-
+    // Güncelleme işlemi
+    bid.amount = amount;
+    bid.message = message;
     await bid.save();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Teklif başarıyla güncellendi.",
       data: bid,
     });
+
   } catch (err) {
     console.error(err);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Teklif güncellenirken bir hata oluştu.",
     });
   }
 };
+
+
 
 //! Teklif silme (freelancer için)
 const deleteBid = async (req, res) => {
@@ -291,6 +289,50 @@ const rejectBid = async (req, res) => {
     });
   }
 };
+const getMyBids = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const bids = await Bid.find({ freelancer: userId }).populate('project');
+    res.status(200).json({ success: true, data: bids });
+  } catch (err) {
+    console.error("Teklifler alınamadı:", err);
+    res.status(500).json({ success: false, message: "Teklifler alınamadı" });
+  }
+};
+// Backend'deki getOpenProjectsWithBids fonksiyonu
+//Durumu ‘open’ (açık) olan projeleri getir, eğer kabul edilmiş teklif (accepted bid) varsa bu projelerin durumunu ‘pasif’ olarak değiştir, ardından tekrar sadece açık projeleri getir ve döndür
+
+const getOpenProjectsWithBids = async () => {
+  try {
+    let projects = await Project.find({ status: 'open' }).populate('bids');//populate('bids')` sayesinde her projenin `bids` (teklif) ilişkisi dolduruluyor.
+
+    // Her projenin status'ünü kontrol edip gerekiyorsa güncelle
+    await Promise.all(
+      projects.map(async (project) => {
+        const hasAcceptedBid = project.bids.some(bid => bid.status === 'accepted');
+        if (hasAcceptedBid) {
+          project.status = 'pasif';
+          await project.save();
+        }
+      })
+    );
+
+    // Güncellenmiş projeleri tekrar çek
+    const updatedProjects = await Project.find({ status: 'open' }).populate({
+      path: 'bids',
+      populate: { path: 'freelancer' }
+    });
+
+    return updatedProjects;
+  } catch (error) {
+    console.error(error);
+    throw new Error('Unable to fetch projects with bids');
+  }
+};
+
+
+
+
 
 module.exports = {
   createBid,
@@ -299,4 +341,6 @@ module.exports = {
   deleteBid,
   acceptBid,
   rejectBid,
+  getMyBids,
+  getOpenProjectsWithBids
 };

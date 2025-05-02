@@ -16,7 +16,6 @@ const projectRoutes = require("./src/routes/projectRoutes.js");
 const bidRoutes = require("./src/routes/bidRoutes.js");
 const uploadRoutes = require("./src/routes/uploadRoutes.js");
 const reviewRoutes = require("./src/routes/reviewRoutes.js");
-const messageRoutes = require('./src/routes/messageRoutes');
 
 const path = require("path");
 
@@ -34,7 +33,6 @@ app.use("/api/bids", bidRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api", reviewRoutes);
 app.use("/uploads", express.static("uploads")); //uploads klasöründeki dosyaları statik olarak sunar vee  tarayıcıya gelen istekler doğru şekilde işler
-app.use('/api/messages', messageRoutes);
 
 
 // Swagger dokümantasyonu

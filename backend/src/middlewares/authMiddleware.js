@@ -16,7 +16,8 @@ const verifyAccessToken = (req, res, next) => {
     // Token geçerliliğini kontrol et ve decoded veriyi req.user içine koy
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     req.user = decoded; // Kullanıcıyı req.user ile bir sonraki middleware'e taşıyoruz
-    next(); // Bir sonraki middleware'e geç
+    // console.log('User ID:', req.user._id);
+    next(); 
   } catch (error) {
     return res.status(401).json({ message: "Geçersiz veya süresi dolmuş access token." });
   }

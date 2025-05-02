@@ -42,6 +42,21 @@ const updateProfile = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+// Kullanıcıyı kimliği doğrulanmış olarak al ("/me" endpointi)
+// const getCurrentUser = async (req, res) => {
+//   try {
+//     const userId = req.user._id; // Token'dan alınan kullanıcı ID'si
+//     const user = await User.findById(userId).select("-password"); // Şifreyi gizli tutalım
+
+//     if (!user) {
+//       return res.status(404).json({ success: false, message: "Kullanıcı bulunamadı" });
+//     }
+
+//     res.json({ success: true, user });
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
 
 // export işlemi
-module.exports = { getProfile, updateProfile };
+module.exports = { getProfile, updateProfile  };

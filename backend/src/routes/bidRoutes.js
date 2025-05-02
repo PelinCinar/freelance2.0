@@ -16,4 +16,10 @@ router.delete('/:id', authMiddleware.verifyAccessToken, checkRole(ROLES.FREELANC
 router.put('/:bidId/accept', authMiddleware.verifyAccessToken, checkRole(ROLES.EMPLOYER), bidController.acceptBid);
 router.put('/:bidId/reject', authMiddleware.verifyAccessToken, checkRole(ROLES.EMPLOYER), bidController.rejectBid);
 
+// Kullanıcının verdiği tüm teklifleri getirme (freelancer için)
+router.get('/my-bids', authMiddleware.verifyAccessToken, checkRole(ROLES.FREELANCER), bidController.getMyBids);
+
+router.get('/open-projects-with-bids', authMiddleware.verifyAccessToken, checkRole(ROLES.FREELANCER), bidController.getMyBids);
+
+
 module.exports = router;

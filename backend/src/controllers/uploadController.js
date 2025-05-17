@@ -3,7 +3,7 @@ const Project = require("../models/Project");
 
 const uploadPortfolio = async (req, res) => {
   try {
-    const userId = req.user.id;  // Token'dan alınan kullanıcı ID'si
+    const userId = req.user._id;  // Token'dan alınan kullanıcı ID'si
 
     if (!req.file) {
       return res.status(400).json({ success: false, message: "Dosya bulunamadı." });

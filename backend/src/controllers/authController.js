@@ -101,7 +101,7 @@ const login = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 15 * 60 * 1000, //15dk
+      maxAge: 30 * 60 * 1000, //15dk
     });
     res.cookie("refreshToken", tokens.refreshToken, {
       httpOnly: true,

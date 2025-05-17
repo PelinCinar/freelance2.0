@@ -6,7 +6,8 @@ const userValidationRules = {
     .isEmail()
     .withMessage("Geçerli bir e-posta giriniz.")
     .normalizeEmail()
-    .toLowerCase(),
+    .toLowerCase()
+    .escape(),
 
   password: body("password")
     .isLength({ min: 6 })
@@ -21,7 +22,8 @@ const userValidationRules = {
     .optional()
     .trim()
     .isLength({ min: 2, max: 50 })
-    .withMessage("İsim en az 2, en fazla 50 karakter olmalıdır."),
+    .withMessage("İsim en az 2, en fazla 50 karakter olmalıdır.")
+    .escape(),
 };
 
 module.exports =  userValidationRules ;

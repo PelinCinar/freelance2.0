@@ -7,7 +7,8 @@ const projectValidator = [
     .withMessage('Proje başlığı boş olamaz.')
     .isLength({ max: 100 })
     .withMessage('Proje başlığı en fazla 100 karakter olmalıdır.')
-    .trim(),
+    .trim()
+    .escape(), //!XSS koruması
 
   // Description validation
   body('description')
@@ -15,7 +16,8 @@ const projectValidator = [
     .withMessage('Proje açıklaması boş olamaz.')
     .isLength({ max: 500 })
     .withMessage('Proje açıklaması en fazla 500 karakter olmalıdır.')
-    .trim(),
+    .trim()
+    .escape(), 
 
   // Budget validation
   body('budget')

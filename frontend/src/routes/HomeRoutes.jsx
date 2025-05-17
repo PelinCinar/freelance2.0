@@ -2,7 +2,8 @@
 import React from 'react';
 import Home from '../pages/Home/Home'; // Home component import ediliyor
 import HomeLayout from '../layouts/HomeLayout';
-import Profile from '../pages/Profile/Profile'; // Profile component
+import Profile from '../pages/Profile/Profile'; 
+import PaymentSuccess from '../components/Payment/PaymentSuccess'; 
 
 export const HomeRoutes = {
   path: '/',
@@ -15,6 +16,10 @@ export const HomeRoutes = {
     {
       path: 'profile', // Profile sayfası için rotayı ekliyoruz
       element: <Profile />, // Profile component
+    },
+    {
+      path: "payment-success",
+      element: <PaymentSuccess />,
     },
   ],
 };

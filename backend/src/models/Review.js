@@ -4,32 +4,34 @@ const reviewSchema = new mongoose.Schema({
   project: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Project",
-    required: true
+    required: true,
   },
-  reviewer: { // Employer (yorum yapan)
+  freelancer: {
+    // Freelancer (yorum alan)
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: true
+    required: true,
   },
-  reviewee: { // Freelancer (yorum alan)
+  reviewer: {
+    // Employer (yorum yapan)
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: true
+    required: true,
   },
   rating: {
     type: Number,
     required: true,
     min: 1,
-    max: 5
+    max: 5,
   },
   comment: {
     type: String,
-    trim: true
+    trim: true,
   },
   createdAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
 const Review = mongoose.model("Review", reviewSchema);

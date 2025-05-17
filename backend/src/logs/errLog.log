@@ -1,2 +1,0 @@
-20.04.2025	17.55.21	825f32f6-8561-407c-a763-f9c89847b5b8	SyntaxError: Expected property name or '}' in JSON at position 5 (line 2 column 3)	POST	/chat/67f39e6a4cfe789de10bbb32	undefined
-20.04.2025	18.27.14	12c4130a-4cd5-4554-a3e3-af60ef835032	SyntaxError: Expected property name or '}' in JSON at position 5 (line 2 column 3)	POST	/chat/67f39e6a4cfe789de10bbb32	undefined

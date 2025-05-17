@@ -1,198 +1,125 @@
-const Review = require('../models/Review');
-const Project = require('../models/Project');
+const Review = require("../models/Review");
+const Project = require("../models/Project");
+const User = require("../models/User");
 
-// Proje için review oluşturma (sadece employer yapabilir!!!!!!)
+// Ortalamayı güncelle
+const updateFreelancerRating = async (freelancerId) => {
+  const reviews = await Review.find({ freelancer: freelancerId });
+  const total = reviews.reduce((sum, r) => sum + r.rating, 0);
+  const average = reviews.length ? total / reviews.length : 0;
+
+  await User.findByIdAndUpdate(freelancerId, {
+    'rating.average': average,
+    'rating.count': reviews.length
+  });
+};
+
+// Yorum oluşturma
 const createReview = async (req, res) => {
   try {
     const { projectId } = req.params;
     const { rating, comment } = req.body;
-    const userId = req.user.id; // authenticated user
+    const reviewerId = req.user._id;
 
-    // Projeyi bulalım
-    const project = await Project.findById(projectId).populate('acceptedBid'); //biz burada project modelini kullanıp projeyi buluyoruz ve acceptbid alanını populete ediyoruz
-    
-    if (!project) {
-      return res.status(404).json({ 
-        success: false, 
-        message: "Proje bulunamadı." 
-      });
-    }
+    const project = await Project.findById(projectId).populate('acceptedBid');
+    if (!project) return res.status(404).json({ success: false, message: "Proje bulunamadı." });
 
-    // Sadece onaylanmış projelere review yapılabilir
-    if (!project.isApproved) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Sadece onaylanmış projelere yorum yapabilirsiniz." 
-      });
-    }
+    const isEligible = project.isApproved || project.status === 'completed';
+    if (!isEligible) return res.status(400).json({ success: false, message: "Proje tamamlanmadan yorum yapılamaz." });
 
-    // Sadece proje sahibi (employer) review yapabilir
-    //objectidyistring yapmış oluyoeuz
-    if (project.employer.toString() !== userId) {
-      return res.status(403).json({ 
-        success: false, 
-        message: "Sadece proje sahibi yorum yapabilir." 
-      });
-    }
+    if (project.employer.toString() !== reviewerId)
+      return res.status(403).json({ success: false, message: "Sadece proje sahibi yorum yapabilir." });
 
-    // Bu projeye daha önce review yapılmış mı kontrol et
-    const existingReview = await Review.findOne({ 
-      project: projectId, 
-      reviewer: userId 
-    });
-    
-    if (existingReview) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Bu projeye zaten bir yorum yaptınız." 
-      });
-    }
+    const existing = await Review.findOne({ reviewer: reviewerId, freelancer: project.acceptedBid.freelancer,
+        project: projectId
+     });
+    if (existing)
+      return res.status(400).json({ success: false, message: "Zaten bu freelancer'a yorum yaptınız." });
 
-    if (!project.acceptedBid) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Bu projeye ait onaylı teklif bulunmamaktadır." 
-      });
-    }
-
-    // Freelancer'ı acceptedBid'den alll
-    const freelancerId = project.acceptedBid.freelancer;
-
-    // Yeni review oluşturr
     const review = await Review.create({
-      project: projectId,
-      reviewer: userId,
-      reviewee: freelancerId,
+      reviewer: reviewerId,
+      freelancer: project.acceptedBid.freelancer,
       rating,
-      comment
+      comment,
+      project: project._id 
     });
 
-    // Projenin rating ortalamasını güncelleyelimm
-    await updateProjectRating(projectId);
+    await updateFreelancerRating(project.acceptedBid.freelancer);
 
-    res.status(201).json({
-      success: true,
-      message: "Yorum başarıyla oluşturuldu.",
-      data: review
-    });
-
-  } catch (error) {
-    console.error("Yorum oluşturma hatası:", error);
-    res.status(500).json({ 
-      success: false, 
-      message: "Yorum oluşturulurken bir hata oluştu." 
-    });
+    res.status(201).json({ success: true, message: "Yorum oluşturuldu.", data: review });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Yorum oluşturulamadı." });
   }
 };
 
-// Projenin rating ortalamasını güncelleyen fonk.
-const updateProjectRating = async (projectId) => {
-  const reviews = await Review.find({ project: projectId });
-  
-  if (reviews.length > 0) {
-    const total = reviews.reduce((sum, review) => sum + review.rating, 0);
-    const average = total / reviews.length;
-    
-    await Project.findByIdAndUpdate(projectId, {
-      'rating.average': average,
-      'rating.count': reviews.length
-    });
-  } else {
-    // Eğer hiç yorum yoksa, rating'i sıfırlayabiliriz
-    await Project.findByIdAndUpdate(projectId, {
-      'rating.average': 0,
-      'rating.count': 0
-    });
-  }
-};
-
-// Projeye ait review'ları getir
-const getProjectReviews = async (req, res) => {
+// Yorum güncelleme
+const updateReview = async (req, res) => {
   try {
-    const { projectId } = req.params;
+    const { reviewId } = req.params;
+    const { rating, comment } = req.body;
+    const reviewerId = req.user.id;
 
-    const reviews = await Review.find({ project: projectId })
-      .populate('reviewer', 'name avatar')
-      .populate('reviewee', 'name avatar')
-      .sort({ createdAt: -1 });
+    const review = await Review.findById(reviewId);
+    if (!review) return res.status(404).json({ success: false, message: "Yorum bulunamadı." });
 
-    res.status(200).json({
-      success: true,
-      count: reviews.length,
-      data: reviews
-    });
+    if (review.reviewer.toString() !== reviewerId)
+      return res.status(403).json({ success: false, message: "Sadece yorum sahibi güncelleyebilir." });
 
-  } catch (error) {
-    console.error("Yorumları getirme hatası:", error);
-    res.status(500).json({ 
-      success: false, 
-      message: "Yorumlar getirilirken bir hata oluştu." 
-    });
+    review.rating = rating;
+    review.comment = comment;
+    await review.save();
+
+    await updateFreelancerRating(review.freelancer);
+
+    res.status(200).json({ success: true, message: "Yorum güncellendi.", data: review });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Yorum güncellenemedi." });
   }
 };
 
-// Kullanıcının aldığı review'ları getirme (freelancer için))
-const getUserReviews = async (req, res) => {
-  try {
-    const userId = req.params.userId;
-
-    const reviews = await Review.find({ reviewee: userId })
-      .populate('reviewer', 'name avatar')
-      .populate('project', 'title')
-      .sort({ createdAt: -1 });
-
-    res.status(200).json({
-      success: true,
-      count: reviews.length,
-      data: reviews
-    });
-
-  } catch (error) {
-    console.error("Kullanıcı yorumlarını getirme hatası:", error);
-    res.status(500).json({ 
-      success: false, 
-      message: "Kullanıcı yorumları getirilirken bir hata oluştu." 
-    });
-  }
-};
-// Yorum silme işlemi
+// Yorum silme
 const deleteReview = async (req, res) => {
   try {
-    const { projectId, reviewId } = req.params;
+    const { reviewId } = req.params;
+    const reviewerId = req.user.id;
 
-    // Yorumun var olup olmadığını kontrol et
-    const review = await Review.findOne({ _id: reviewId, project: projectId });
-    
-    if (!review) {
-      return res.status(404).json({
-        success: false,
-        message: "Yorum bulunamadı."
-      });
-    }
+    const review = await Review.findById(reviewId);
+    if (!review) return res.status(404).json({ success: false, message: "Yorum bulunamadı." });
 
-    // Silme işlemi
-    await Review.findByIdAndDelete(reviewId);
+    if (review.reviewer.toString() !== reviewerId)
+      return res.status(403).json({ success: false, message: "Sadece yorum sahibi silebilir." });
 
-    // Projenin rating ortalamasını güncelle
-    await updateProjectRating(projectId);
+    await review.remove();
+    await updateFreelancerRating(review.freelancer);
 
-    res.status(200).json({
-      success: true,
-      message: "Yorum başarıyla silindi."
-    });
-  } catch (error) {
-    console.error("Yorum silme hatası:", error);
-    res.status(500).json({
-      success: false,
-      message: "Yorum silinirken bir hata oluştu."
-    });
+    res.status(200).json({ success: true, message: "Yorum silindi." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Yorum silinemedi." });
   }
 };
 
+// Freelancer'ın aldığı yorumlar
+const getFreelancerReviews = async (req, res) => {
+  try {
+    const { freelancerId } = req.params;
+
+    const reviews = await Review.find({ freelancer: freelancerId })
+      .populate('reviewer', 'name avatar')
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ success: true, data: reviews });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Yorumlar alınamadı." });
+  }
+};
 
 module.exports = {
   createReview,
-  getProjectReviews,
-  getUserReviews,
-  deleteReview
+  updateReview,
+  deleteReview,
+  getFreelancerReviews,
 };

@@ -16,29 +16,57 @@ const projectRoutes = require("./src/routes/projectRoutes.js");
 const bidRoutes = require("./src/routes/bidRoutes.js");
 const uploadRoutes = require("./src/routes/uploadRoutes.js");
 const reviewRoutes = require("./src/routes/reviewRoutes.js");
+const notificationRoutes = require("./src/routes/notificationRoutes.js");
+const paymentRoutes = require("./src/routes/paymentRoutes.js");
 
 const path = require("path");
 
+const helmet = require("helmet");//!uygulamanın her response’una (cevaplarına) otomatik olarak ekstra güvenlik başlıkları (security headers) eklendi.
+const limiter = require("./src/middlewares/rateLimitingMiddleware.js"); // Middleware'i import et
+
+const { handleWebhook } = require("./src/controllers/paymentController");
+
+
 const app = express();
-app.use(cors(corsOptions));
+
+
 
 // Middleware
+app.use(helmet());
+app.use(cors(corsOptions));
+//!Stripe webhook için özel middleware
+app.post(
+  "/api/payments/webhook",
+  express.raw({ type: "application/json" }),
+  handleWebhook
+);
 app.use(express.json());
+
 app.use(cookieParser());
 app.use(logEventsMiddleware);
+app.use("/api/", limiter);//!tüm isteklere uyguladık
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/bids", bidRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api", reviewRoutes);
-app.use("/uploads", express.static("uploads")); //uploads klasöründeki dosyaları statik olarak sunar vee  tarayıcıya gelen istekler doğru şekilde işler
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/payments", paymentRoutes);
+
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+ //uploads klasöründeki dosyaları statik olarak sunar vee  tarayıcıya gelen istekler doğru şekilde işler
 
 
 // Swagger dokümantasyonu
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 
-app.use(errorHandler);
+app.get("/success", (req, res) => {
+  res.sendFile(path.join(__dirname, "views", "success.html"));
+});
+
+app.use(errorHandler);//!en sonda olmalı çünkü ecpress nexterr çağrıldığında devreye grecek
 
 module.exports = app;

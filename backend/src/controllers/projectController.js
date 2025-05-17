@@ -1,5 +1,7 @@
 const Project = require("../models/Project.js");
 const Bid = require("../models/Bid.js");
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
 
 // Proje oluşturma (default status: 'open')
 const createProject = async (req, res) => {
@@ -182,7 +184,7 @@ const completeProject = async (req, res) => {
 const approveProject = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user.id;
+    const userId = req.user._id;
 
     const project = await Project.findById(id);
     if (!project) {

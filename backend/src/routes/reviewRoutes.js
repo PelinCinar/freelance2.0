@@ -1,33 +1,39 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const reviewController = require('../controllers/reviewController');
-const authMiddleware = require('../middlewares/authMiddleware');
-// const { checkRole } = require('../middlewares/roleAuthMiddleware');
-// const ROLES = require('../constants/roles');
+const reviewController = require("../controllers/reviewController");
+const auth = require("../middlewares/authMiddleware");
+const { checkRole } = require("../middlewares/roleAuthMiddleware");
+const ROLES = require("../constants/roles");
 
+// Yorum oluştur (sadece işveren)
 router.post(
-  '/projects/:projectId/reviews',
-  authMiddleware.verifyAccessToken,
+  "/projects/:projectId/reviews",
+  auth.verifyAccessToken,
+  checkRole(ROLES.EMPLOYER),
   reviewController.createReview
 );
 
-router.get(
-  '/projects/:projectId/reviews',
-  authMiddleware.verifyAccessToken,
-  reviewController.getProjectReviews
+// Yorum güncelle (sadece yorum sahibi işveren)
+router.put(
+  "/reviews/:reviewId",
+  auth.verifyAccessToken,
+  checkRole(ROLES.EMPLOYER),
+  reviewController.updateReview
 );
 
-// Belirli bir kullanıcıya ait tüm yorumları listeleme
-router.get(
-  '/users/:userId/reviews',
-  authMiddleware.verifyAccessToken,
-  reviewController.getUserReviews
-);
-// Yorum silme
+// Yorum sil (sadece yorum sahibi işveren)
 router.delete(
-  '/projects/:projectId/reviews/:reviewId',
-  authMiddleware.verifyAccessToken,
+  "/reviews/:reviewId",
+  auth.verifyAccessToken,
+  checkRole(ROLES.EMPLOYER),
   reviewController.deleteReview
+);
+
+// Freelancer yorumları görüntüleme (herkes görebilir)
+router.get(
+  "/freelancers/:freelancerId/reviews",
+  auth.verifyAccessToken,
+  reviewController.getFreelancerReviews
 );
 
 module.exports = router;

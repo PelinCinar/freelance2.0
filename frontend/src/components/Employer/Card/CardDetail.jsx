@@ -1,18 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Button, message } from "antd";
-import { io } from "socket.io-client";
+import { Card, Button, message, Typography, Divider, List, Tag, Rate } from "antd";
+import { FileOutlined, CalendarOutlined, MessageOutlined } from "@ant-design/icons";
 
-// Socket.io'yu başlatıyoruz
-const socket = io("http://localhost:8080");
+const { Title, Paragraph } = Typography;
 
 const CardDetail = () => {
-  const { id } = useParams();  
+  const { id } = useParams();
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate(); // useNavigate kullanıyoruz
+  const navigate = useNavigate();
 
-  // Proje detayını fetch etme
   useEffect(() => {
     const fetchProject = async () => {
       try {
@@ -21,13 +19,13 @@ const CardDetail = () => {
         });
         const data = await res.json();
         if (data.success) {
-          setProject(data.data); // Projeyi set ediyoruz
+          setProject(data.data);
         } else {
-          message.error("Projeler alınamadı.");
+          message.error("Proje detayları alınamadı.");
         }
       } catch (error) {
         console.error("Proje detayı alınırken hata oluştu:", error);
-        message.error("Proje detayı alınamadı.");
+        message.error("Proje detayları alınamadı.");
       } finally {
         setLoading(false);
       }
@@ -35,84 +33,81 @@ const CardDetail = () => {
     fetchProject();
   }, [id]);
 
-  // Eğer proje yoksa ya da yükleniyorsa, bekleme ekranı göster
-  if (loading) return <div>Yükleniyor...</div>;
-  if (!project) return <div>Proje bulunamadı.</div>;
+  if (loading) return <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "300px" }}>Yükleniyor...</div>;
+  if (!project) return <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "300px" }}>Proje bulunamadı.</div>;
 
-  // Sohbete başla butonu işlevi
   const startChat = () => {
     if (project.acceptedBid) {
-      const roomId = project.acceptedBid._id; // Teklif ID'si ile oda ismi
-      socket.emit("joinRoom", roomId); // Odaya katıl
-      message.success("Sohbet odasına katıldınız.");
-      
-      // Sohbet odasına yönlendir
-      navigate(`/chat/${project._id}`);  // Proje ID'sine göre sohbet odasına yönlendiriyoruz
+      navigate(`/chat/${project._id}`);
     } else {
       message.error("Kabul edilen teklif bulunamadı.");
     }
   };
 
   return (
-    <div className="p-6 border rounded-lg shadow space-y-4 relative">
-      <h1 className="text-2xl font-bold">{project.title}</h1>
-      <p className="text-gray-700">{project.description}</p>
-      <p><strong>Bütçe:</strong> ${project.budget}</p>
-      <p><strong>Durum:</strong> {project.status}</p>
-      <p><strong>Teklif Sayısı:</strong> {project.bids.length}</p>
-      <p><strong>Kabul Edilen Teklif ID:</strong> {project.acceptedBid ? project.acceptedBid._id : "Henüz kabul edilmedi"}</p>
-      
-      <p><strong>Gönderilen Dosyalar:</strong></p>
-      <ul className="list-disc list-inside">
-        {project.projectSubmissions.map(file => (
-          <li key={file._id}>
-            <a
-              href={`http://localhost:8080${file.fileUrl}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              download
-              className="text-blue-500 underline"
-            >
-              {file.fileName}
-            </a> – {new Date(file.uploadedAt).toLocaleString()}
-          </li>
-        ))}
-      </ul>
-
-      <p><strong>Ortalama Puan:</strong> {project.rating.average || "Henüz yok"}</p>
-      <p><strong>Oluşturulma:</strong> {new Date(project.createdAt).toLocaleString()}</p>
-
-      {/* Sohbete başla butonu, kabul edilen teklif varsa aktif olacak */}
-      {project.acceptedBid && (
-        <Button
-          type="primary"
-          onClick={startChat}
-          style={{
-            position: "absolute",
-            bottom: "20px",
-            right: "20px",
-            display: "inline-block",
-          }}
-        >
-          Sohbete Başla
-        </Button>
-      )}
-
-      {/* Eğer kabul edilen teklif yoksa buton pasif olacak */}
-      {!project.acceptedBid && (
-        <Button
-          type="default"
-          disabled
-          style={{
-            position: "absolute",
-            bottom: "20px",
-            right: "20px",
-            display: "inline-block",
-          }}
-        >
-          Sohbete Başla
-        </Button>
-      )}
+    <div className="p-6" style={{ display: "flex", justifyContent: "center" }}>
+      <Card
+        title={<Title level={3}>{project.title}</Title>}
+        style={{ width: "100%", maxWidth: 800 }}
+      >
+        <Paragraph>{project.description}</Paragraph>
+        <Divider />
+        <div className="mb-3">
+          <Tag color="geekblue">Bütçe: ${project.budget}</Tag>
+          <Tag color={project.status === "active" ? "green" : "default"}>Durum: {project.status}</Tag>
+          <Tag color="cyan">Teklif Sayısı: {project.bids.length}</Tag>
+        </div>
+        <Paragraph>
+          <strong>Kabul Edilen Teklif:</strong>{" "}
+          {project.acceptedBid ? project.acceptedBid._id : <Tag color="warning">Henüz Yok</Tag>}
+        </Paragraph>
+        <Divider dashed />
+        <div className="mb-3">
+          <Typography.Text strong>Gönderilen Dosyalar:</Typography.Text>
+          <List
+            size="small"
+            dataSource={project.projectSubmissions}
+            renderItem={(file) => (
+              <List.Item>
+                <FileOutlined className="mr-2" />
+                <a
+                  href={`http://localhost:8080${file.fileUrl}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  download
+                  className="text-blue-500 underline"
+                >
+                  {file.fileName}
+                </a>{" "}
+                <Typography.Text type="secondary" style={{ marginLeft: 8 }}>
+                  <CalendarOutlined className="mr-1" />
+                  {new Date(file.uploadedAt).toLocaleString()}
+                </Typography.Text>
+              </List.Item>
+            )}
+          />
+        </div>
+        <Divider dashed />
+        <Paragraph>
+          <strong>Ortalama Puan:</strong>{" "}
+          {project.rating.average ? <Rate disabled defaultValue={project.rating.average} /> : "Henüz yok"}
+        </Paragraph>
+        <Paragraph>
+          <CalendarOutlined className="mr-1" />
+          <strong>Oluşturulma Tarihi:</strong> {new Date(project.createdAt).toLocaleString()}
+        </Paragraph>
+        <div style={{ textAlign: "right", marginTop: 24 }}>
+          {project.acceptedBid ? (
+            <Button type="primary" onClick={startChat} icon={<MessageOutlined />}>
+              Sohbete Başla
+            </Button>
+          ) : (
+            <Button type="default" disabled icon={<MessageOutlined />}>
+              Sohbete Başla
+            </Button>
+          )}
+        </div>
+      </Card>
     </div>
   );
 };

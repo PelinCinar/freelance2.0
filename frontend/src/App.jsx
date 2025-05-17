@@ -1,17 +1,18 @@
-import React from 'react';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { HomeRoutes } from './routes/HomeRoutes'; 
-import { AuthRoutes } from './routes/AuthRoutes'; 
-import { EmployerRoutes } from './routes/EmployerRoutes'; 
-import { ChatRoutes } from './routes/ChatRoutes';
-import { FreelancerRoutes } from './routes/FreelancerRoutes';
+import React from "react";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { HomeRoutes } from "./routes/HomeRoutes";
+import { AuthRoutes } from "./routes/AuthRoutes";
+import { EmployerRoutes } from "./routes/EmployerRoutes";
+import { ChatRoutes } from "./routes/ChatRoutes";
+import { FreelancerRoutes } from "./routes/FreelancerRoutes";
+
 
 const router = createBrowserRouter([
-  HomeRoutes,  
-  AuthRoutes,  
+  HomeRoutes,
+  AuthRoutes,
   ...EmployerRoutes,
   ...FreelancerRoutes,
-  ChatRoutes
+  ChatRoutes,
 ]);
 
 const App = () => {

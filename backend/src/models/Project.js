@@ -37,7 +37,12 @@ const projectSchema = new mongoose.Schema(
       enum: ["open", "in-progress", "completed", "closed"],
       default: "open",
     },
-
+    // Yeni paymentStatus alanı ekledik
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "completed", "failed"],
+      default: "pending",
+    },
     //!proje yollama ve onaylama için alan eklendi.
     projectSubmissions: [
       {
@@ -57,10 +62,10 @@ const projectSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    rating: {
-      average: { type: Number, default: 0 },
-      count: { type: Number, default: 0 },
-    },
+    // rating: {
+    //   average: { type: Number, default: 0 },
+    //   count: { type: Number, default: 0 },
+    // },
   },
 
   {

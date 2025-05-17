@@ -1,15 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { io } from "socket.io-client";
 import { Button, Input } from "antd";
-import { jwtDecode } from "jwt-decode";
-
-// const token = localStorage.getItem("accessToken");
-
-const socket = io("http://localhost:8080", {
-  withCredentials: true,
-  transports: ['websocket'], // sadece websocket kullanmak istersen
-});
+import { jwtDecode } from "jwt-decode"; // Hatalı
+import socket from "../../utils/socket";
 
 const ChatPage = () => {
   const { projectId } = useParams();
@@ -17,12 +10,12 @@ const ChatPage = () => {
   const [messageContent, setMessageContent] = useState("");
   const [users, setUsers] = useState([]);
 
-  // Kullanıcı odaya katıldığında
   useEffect(() => {
-    // if (!socket || !projectId) return; 
+    if (!projectId) return;
+
     const token = localStorage.getItem("accessToken");
     let username = "Misafir";
-  
+
     if (token) {
       try {
         const decoded = jwtDecode(token);
@@ -31,80 +24,59 @@ const ChatPage = () => {
         console.error("JWT çözümlenemedi:", err.message);
       }
     }
-  
+
+    socket.connect(); // autoConnect false ise manuel bağla
     socket.emit("joinRoom", { roomId: projectId, username });
-  
-    // Odaya katılan kullanıcılar
+
     socket.on("roomUsers", (data) => {
       setUsers(data.users);
     });
-  
-    // Yeni gelen mesaj
+
     socket.on("newMessage", (message) => {
       setMessages((prev) => [...prev, message]);
     });
-  
-    // Odaya girince gelen geçmiş mesajlar
-    socket.on("previousMessages", (msgs) => {
-      setMessages(msgs); // doğrudan tüm mesajları state'e yaz
-    });
-  
-    return () => {
-      socket.off("newMessage");
-      socket.off("roomUsers");
-      socket.off("previousMessages");
-    };
-  }, [socket, projectId]);
-  
-  
 
-  // Mesaj gönderme fonksiyonu
+    socket.on("previousMessages", (msgs) => {
+      setMessages(msgs);
+    });
+
+    return () => {
+      socket.emit("leaveRoom", { roomId: projectId, username }); // opsiyonel oda terk etme
+      socket.off("roomUsers");
+      socket.off("newMessage");
+      socket.off("previousMessages");
+      socket.disconnect();
+    };
+  }, [projectId]);
+
   const sendMessage = () => {
     if (messageContent.trim()) {
-      socket.emit("sendMessage", messageContent); // Mesajı odada herkese gönder
-      setMessageContent(""); // Mesajı temizle
+      socket.emit("sendMessage", messageContent);
+      setMessageContent("");
     }
   };
 
   return (
     <div>
       <h2>Chat - Project: {projectId}</h2>
-      <div
-        style={{
-          height: "400px",
-          overflowY: "scroll",
-          border: "1px solid #ddd",
-          marginBottom: "20px",
-        }}
-      >
+      <div style={{ height: "400px", overflowY: "scroll", border: "1px solid #ddd", marginBottom: "20px" }}>
         {messages.map((message, index) => (
           <div key={index}>
-            <p>
-              <strong>{message.senderUsername || message.sender}:</strong>{" "}
-              {message.content}
-            </p>
+            <p><strong>{message.senderUsername || message.sender}:</strong> {message.content}</p>
           </div>
         ))}
       </div>
-
-      <div>
-        <Input
-          value={messageContent}
-          onChange={(e) => setMessageContent(e.target.value)}
-          placeholder="Mesajınızı yazın"
-          style={{ marginBottom: "10px" }}
-        />
-        <Button onClick={sendMessage} type="primary">
-          Gönder
-        </Button>
-      </div>
-
+      <Input
+        value={messageContent}
+        onChange={(e) => setMessageContent(e.target.value)}
+        placeholder="Mesajınızı yazın"
+        style={{ marginBottom: "10px" }}
+      />
+      <Button onClick={sendMessage} type="primary">Gönder</Button>
       <div>
         <h4>Online Kullanıcılar:</h4>
         <ul>
-          {users.map((user, index) => (
-            <li key={index}>{user}</li>
-          ))}
+          {users.map((user, index) => (<li key={index}>{user}</li>))}
         </ul>
       </div>
     </div>

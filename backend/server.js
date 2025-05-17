@@ -5,6 +5,7 @@ const http = require("http");
 const socketIo = require("socket.io");
 const jwt = require("jsonwebtoken"); // JWT doğrulama için
 const Message = require("./src/models/Message");
+const Notification = require("./src/models/Notification");
 const PORT = process.env.PORT || 8080; // Portu ayarla (8080 olarak değiştirdim)
 const cookie = require("cookie");
 
@@ -17,10 +18,9 @@ const server = http.createServer(app);
 const io = require("socket.io")(server, {
   cors: {
     origin: "http://localhost:5173",
-    withCredentials: true
+    withCredentials: true,
   },
 });
-
 
 // Veritabanına bağlan
 connectDB();
@@ -32,22 +32,21 @@ const activeUsers = new Map();
 io.use((socket, next) => {
   try {
     const rawCookie = socket.handshake.headers.cookie;
-    if (!rawCookie) throw new Error('No cookies found');
+    if (!rawCookie) throw new Error("No cookies found");
 
     const parsedCookies = cookie.parse(rawCookie);
     const token = parsedCookies.accessToken;
 
-    if (!token) throw new Error('No token found');
+    if (!token) throw new Error("No token found");
 
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     socket.user = decoded;
     next();
   } catch (err) {
     // console.error('Authentication error:', err.message);
-    next(new Error('Authentication error'));
+    next(new Error("Authentication error"));
   }
 });
-
 
 // Socket bağlantılarını dinle
 io.on("connection", (socket) => {
@@ -55,6 +54,8 @@ io.on("connection", (socket) => {
   const userId = socket.user?._id || null;
 
   socket.on("joinRoom", async ({ roomId }) => {
+    console.log("🧩 joinRoom çağrıldı:", roomId, "socketID:", socket.id);
+
     socket.join(roomId);
     socket.roomId = roomId;
 
@@ -69,7 +70,10 @@ io.on("connection", (socket) => {
       users: Array.from(activeUsers.get(roomId).values()),
     });
 
-    const messages = await Message.find({ roomId }).sort({ timestamp: 1 }).limit(50).lean();
+    const messages = await Message.find({ roomId })
+      .sort({ timestamp: 1 })
+      .limit(50)
+      .lean();
     socket.emit("previousMessages", messages);
   });
 
@@ -85,12 +89,48 @@ io.on("connection", (socket) => {
 
     await newMessage.save();
 
+    // 1️ - Oda içindeki herkese mesajı gönder
     io.to(socket.roomId).emit("newMessage", {
       sender: socket.user._id,
       senderUsername: socket.user.name,
       content: message,
       timestamp: newMessage.timestamp,
     });
+
+    // 2️ - Oda içindeki diğer kullanıcılara notification gönder ve kaydet
+    const roomSockets = await io.in(socket.roomId).fetchSockets();
+
+    // Her kullanıcıya bir kez bildirim oluştur (sender hariç)
+    const notifiedUserIds = new Set();
+
+    for (const s of roomSockets) {
+      const receiverId = s.user?._id;
+      if (
+        receiverId &&
+        receiverId !== socket.user._id &&
+        !notifiedUserIds.has(receiverId)
+      ) {
+        notifiedUserIds.add(receiverId);
+
+        // Bildirimi veritabanına kaydet
+        const notification = new Notification({
+          recipient: receiverId,
+          sender: socket.user._id,
+          senderUsername: socket.user.name,
+          content: message,
+          roomId: socket.roomId,
+          type: "message", // örnek bir tür
+        });
+        await notification.save();
+
+        // İlgili kullanıcıya bildirimi anlık gönder
+        io.to(s.id).emit("notification", {
+          from: socket.user.name,
+          content: message,
+          roomId: socket.roomId,
+        });
+      }
+    }
   });
 
   socket.on("disconnect", () => {

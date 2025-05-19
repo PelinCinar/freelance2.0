@@ -1,34 +1,34 @@
 const Notification = require("../models/Notification");
 
-// Bildirim oluşturma (örneğin mesaj gönderildiğinde çağrılabilir)
+
 const createNotification = async (req, res) => {
-    try {
-      const { message, userId, senderId, roomId } = req.body; // Gerekli parametreleri alıyoruz
-      const receiverId = userId; // Alıcıyı userId'den alıyoruz
-  
-      // Bildirimi oluştur
-      const notification = new Notification({
-        user: receiverId,    // Bildirimi alacak kullanıcı
-        sender: senderId,    // Mesajı gönderen kullanıcı
-        roomId: roomId,      // Odanın ID'si
-        message: message,    // Mesaj
-        type: 'message',     // Bildirim türü (burada varsayılan olarak 'message' kullanılıyor)
-      });
-  
-      await notification.save();
-      res.status(201).json(notification);
-    } catch (err) {
-      console.error("Bildirim oluşturulamadı:", err);
-      res.status(500).json({ error: 'Bildirim oluşturulamadı' });
-    }
-  };
-  
-// Kullanıcının tüm bildirimlerini getir
+  try {
+    const { message, userId, senderId, roomId } = req.body; // Gerekli parametreleri alıyoruz
+    const receiverId = userId; // Alıcıyı userId'den alıyoruz
+    // console.log(req.body)
+    // Bildirimi oluştur
+    const notification = new Notification({
+      user: receiverId, // Bildirimi alacak kullanıcı
+      sender: senderId, // Mesajı gönderen kullanıcı
+      roomId: roomId, // Odanın ID'si
+      message: message, // Mesaj
+      type: "message", // Bildirim türü (burada varsayılan olarak 'message' kullanılıyor)
+    });
+
+    await notification.save();
+    res.status(201).json(notification);
+  } catch (err) {
+    console.error("Bildirim oluşturulamadı:", err);
+    res.status(500).json({ error: "Bildirim oluşturulamadı" });
+  }
+};
+
+// Kullanıcının tüm bildirimlerini getirelim
 const getNotifications = async (req, res) => {
   try {
     const notifications = await Notification.find({ user: req.user._id }).sort({
       createdAt: -1,
-    });
+    });//sıralama kısmına göre en yeni üstte gelsin cnm
 
     res.status(200).json({
       success: true,
@@ -40,10 +40,10 @@ const getNotifications = async (req, res) => {
   }
 };
 
-// Bildirimi okundu olarak işaretle
+// Bildirimi okundu olarak işaretleme.
 const markAsRead = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params;//idyi istekten gelen parametreden alalım devamında zaten bilyorsun aman. mongodbde işlem asenkron gerçkelştiğinden awaiti kullandık zaten falan filan
 
     await Notification.findByIdAndUpdate(id, { isRead: true });
 
@@ -78,5 +78,3 @@ module.exports = {
   markAsRead,
   deleteNotification,
 };
-
-

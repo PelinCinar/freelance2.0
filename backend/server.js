@@ -69,7 +69,7 @@ io.on("connection", (socket) => {
     io.to(roomId).emit("roomUsers", {
       users: Array.from(activeUsers.get(roomId).values()),
     });
-
+    //!sadece bağlanan kullanıcıya mesaj geçmşini gönderiuo
     const messages = await Message.find({ roomId })
       .sort({ timestamp: 1 })
       .limit(50)
@@ -114,11 +114,12 @@ io.on("connection", (socket) => {
 
         // Bildirimi veritabanına kaydet
         const notification = new Notification({
-          recipient: receiverId,
+          user: receiverId,
           sender: socket.user._id,
           senderUsername: socket.user.name,
           content: message,
           roomId: socket.roomId,
+          message: message,
           type: "message", // örnek bir tür
         });
         await notification.save();
@@ -128,6 +129,7 @@ io.on("connection", (socket) => {
           from: socket.user.name,
           content: message,
           roomId: socket.roomId,
+          type: "message",
         });
       }
     }

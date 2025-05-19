@@ -1,17 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Button, message, Card, Badge, Skeleton, Typography,Tabs  } from "antd";
-import { io } from "socket.io-client";
+import { Button,  Card, Badge, Skeleton, Typography, Tabs } from "antd";
 import { useNavigate } from "react-router-dom";
-import FreelancerProjectsModal from "../../components/Modals/FreelancerProjectsModal"; // Modal'ı import ediyoruz
+import FreelancerProjectsModal from "../../components/Modals/FreelancerProjectsModal";
 import {
   DollarOutlined,
   CheckCircleOutlined,
   ClockCircleOutlined,
   FileTextOutlined,
 } from "@ant-design/icons";
-
-// Socket.io'yu başlatıyoruz
-const socket = io("http://localhost:8080");
 
 const { Title, Text } = Typography;
 
@@ -74,17 +70,15 @@ const FreelancerProjects = () => {
 
   const getCardStyle = (bid) => {
     if (bid.status === "accepted" && bid.project.status === "completed") {
-      return { backgroundColor: "#d4edda", color: "#155724" }; // Tamamlanan (Yeşil)
+      return { backgroundColor: "#d4edda", color: "#155724" };
     }
     if (bid.status === "accepted") {
-      return { backgroundColor: "#fff3cd", color: "#856404" }; // Aktif (Sarı)
+      return { backgroundColor: "#fff3cd", color: "#856404" };
     }
-    return { backgroundColor: "#f8d7da", color: "#721c24" }; // Bekleyen (Kırmızı)
+    return { backgroundColor: "#f8d7da", color: "#721c24" };
   };
 
-  const startChat = (projectId, acceptedBidId) => {
-    socket.emit("joinRoom", acceptedBidId);
-    message.success("Sohbet odasına katıldınız.");
+  const startChat = (projectId) => {
     navigate(`/chat/${projectId}`);
   };
 
@@ -144,10 +138,9 @@ const FreelancerProjects = () => {
             style={{
               marginBottom: "20px",
               hoverable: true,
-              ...getCardStyle(bid), // Duruma göre arka plan ve renk değişimi
+              ...getCardStyle(bid),
             }}
           >
-            {/* Proje Bilgisi */}
             <div style={{ marginBottom: "1rem" }}>
               <Text strong style={{ display: "block", marginBottom: "4px" }}>
                 Proje Açıklaması:
@@ -155,12 +148,10 @@ const FreelancerProjects = () => {
               <Text>{bid.project.description}</Text>
 
               <div style={{ marginTop: "0.5rem" }}>
-                <Text strong>Proje Bütçesi:</Text>{" "}
-                <Text>${bid.project.budget}</Text>
+                <Text strong>Proje Bütçesi:</Text> <Text>${bid.project.budget}</Text>
               </div>
             </div>
 
-            {/* Freelancer'ın Teklifi */}
             <div
               style={{
                 marginBottom: "1rem",
@@ -179,11 +170,10 @@ const FreelancerProjects = () => {
               </div>
             </div>
 
-            {/* Aksiyonlar */}
             <div style={{ marginTop: "12px" }}>
               <Button
                 type="primary"
-                onClick={() => startChat(bid.project._id, bid._id)}
+                onClick={() => startChat(bid.project._id)}
                 disabled={
                   !(
                     bid.status === "accepted" &&
@@ -196,7 +186,6 @@ const FreelancerProjects = () => {
               </Button>
             </div>
 
-            {/* Bilgilendirme ve Teklif Güncelleme */}
             {!(bid.status === "accepted") && (
               <Text style={{ color: "gray", display: "block", marginTop: "8px" }}>
                 Teklifiniz henüz kabul edilmediği için sohbet başlatamazsınız.
@@ -208,7 +197,6 @@ const FreelancerProjects = () => {
               </Text>
             )}
 
-            {/* Teklif Güncelle Butonu */}
             {bid.status === "pending" ? (
               <Button
                 type="dashed"
@@ -226,7 +214,6 @@ const FreelancerProjects = () => {
         ))
       )}
 
-      {/* Teklif Güncelle Modal */}
       {selectedBid && (
         <FreelancerProjectsModal
           visible={isModalVisible}

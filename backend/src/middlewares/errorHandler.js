@@ -1,9 +1,9 @@
 const { logEvents } = require("./logEventsMiddleware.js");
 const errorHandler = (err, req, res, next) => {
-    // Hata loglama mesajını oluştur
-    const errorMessage = `${err.name}: ${err.message}\t${req.method}\t${req.url}\t${req.headers.origin}`;
+    // .dört parametreli bir middlewaredir ve uygulama içinde tek hatada express bizi buraya yönlendirir.
+    const errorMessage = `${err.name}: ${err.message}\t${req.method}\t${req.url}\t${req.headers.origin}`;//Hata loglama mesajını oluşturuyoruz.
     
-    logEvents(errorMessage, "errLog.log");
+    logEvents(errorMessage, "errLog.log");//hata mesajlarımızı bir log dosyasında yazmak için kullanuyruzz log eventsiii
   
     console.error(err.stack);
   
@@ -13,7 +13,7 @@ const errorHandler = (err, req, res, next) => {
   
     res.json({
       message: err.message, 
-      stack: process.env.NODE_ENV === "production" ? null : err.stack, // sadece üretim dışında stack trace
+      stack: process.env.NODE_ENV === "production" ? null : err.stack, // sadece development ortamında gösterilir stack trace production da gizlenir
     });
   };
   

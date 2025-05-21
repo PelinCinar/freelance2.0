@@ -1,9 +1,12 @@
 const { format } = require("date-fns");
 const { v4: uuid } = require("uuid");
-const fs = require("fs");
-const fsPromises = require("fs").promises;
+const fs = require("fs");//dosya sistemi modulü
+const fsPromises = require("fs").promises;// Asenkron dosya işlemleri için promiseli versiyonu.
+
+
 const path = require("path");
 
+//Dosyaya log satırı yazan yardımcı fonksiyon
 const logEvents = async (message, logFileName) => {
   const dateTime = format(new Date(), "dd.MM.yyyy\tHH.mm.ss");
   const logItem = `${dateTime}\t${uuid()}\t${message}\n`;
@@ -22,7 +25,7 @@ const logEvents = async (message, logFileName) => {
   }
 };
 
-// Request loglama middleware (Güncellenmiş)
+// Request loglama middleware fonk
 const logEventsMiddleware = (req, res, next) => {
   // response'dan önce loglama yapılacak
   const oldWrite = res.write;

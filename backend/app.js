@@ -34,7 +34,7 @@ const app = express();
 // Middleware
 app.use(helmet());
 app.use(cors(corsOptions));
-//!Stripe webhook için özel middleware
+//!Stripe webhook için özel middlewareİmza doğrulama
 app.post(
   "/api/payments/webhook",
   express.raw({ type: "application/json" }),

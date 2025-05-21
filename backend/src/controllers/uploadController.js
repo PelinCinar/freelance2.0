@@ -66,5 +66,66 @@ const uploadProject = async (req, res) => {
     res.status(500).json({ success: false, message: "Proje dosyası yüklenirken bir hata oluştu." });
   }
 };
+const deletePortfolioFile = async (req, res) => {
+    const { fileName } = req.params;
+    const userId = req.user._id;
 
-module.exports = { uploadPortfolio, uploadProject };
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "Kullanıcı bulunamadı." });
+        }
+
+        const fileToDeleteIndex = user.portfolio.findIndex(file => file.fileName === fileName);
+        if (fileToDeleteIndex === -1) {
+            return res.status(404).json({ success: false, message: "Silinecek dosya bulunamadı." });
+        }
+
+        const fileToDelete = user.portfolio[fileToDeleteIndex];
+        const filePath = path.join(__dirname, '../uploads', fileToDelete.fileName);
+
+        await fs.unlink(filePath);
+
+        user.portfolio.splice(fileToDeleteIndex, 1);
+        await user.save();
+
+        res.status(200).json({ success: true, message: "Portfolyo dosyası başarıyla silindi." });
+
+    } catch (error) {
+        console.error("Portfolyo silme hatası:", error);
+        res.status(500).json({ success: false, message: "Portfolyo dosyası silinirken bir hata oluştu." });
+    }
+};
+
+const deleteProjectFile = async (req, res) => {
+    const { projectId, fileName } = req.params;
+
+    try {
+        const project = await Project.findById(projectId);
+        if (!project) {
+            return res.status(404).json({ success: false, message: "Proje bulunamadı." });
+        }
+
+        const fileToDeleteIndex = project.projectSubmissions.findIndex(file => file.fileName === fileName);
+        if (fileToDeleteIndex === -1) {
+            return res.status(404).json({ success: false, message: "Silinecek proje dosyası bulunamadı." });
+        }
+
+        const fileToDelete = project.projectSubmissions[fileToDeleteIndex];
+        const filePath = path.join(__dirname, '../uploads', fileToDelete.fileName);
+
+        await fs.unlink(filePath);
+
+        project.projectSubmissions.splice(fileToDeleteIndex, 1);
+        project.isSubmitted = project.projectSubmissions.length > 0;
+        await project.save();
+
+        res.status(200).json({ success: true, message: "Proje dosyası başarıyla silindi." });
+
+    } catch (error) {
+        console.error("Proje dosyası silme hatası:", error);
+        res.status(500).json({ success: false, message: "Proje dosyası silinirken bir hata oluştu." });
+    }
+};
+
+module.exports = { uploadPortfolio, uploadProject,deletePortfolioFile,deleteProjectFile };

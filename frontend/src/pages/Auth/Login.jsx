@@ -20,16 +20,25 @@ export default function LoginPage() {
         credentials: "include", // Cookie'yi gönder ve al
       });
 
-      if (res.status === 200) {
-        message.success("Giriş işlemi başarılı.");
-        navigate("/"); 
-      } else if (res.status === 404) {
-        message.error("Kullanıcı bulunamadı!");
-      } else if (res.status === 403) {
-        message.error("Şifre yanlış!");
+    
+    if (res.status === 200) {
+      const data = await res.json();
+      message.success("Giriş işlemi başarılı.");
+
+      // Kullanıcının rolüne göre yönlendirme yap
+      if (data.user && data.user.role === "admin") {
+        navigate("/admin-panel"); // Admin panelinin yolu
       } else {
-        message.error("Bir hata oluştu.");
+        navigate("/"); // Diğer kullanıcılar için anasayfa
       }
+    } else if (res.status === 404) {
+      message.error("Kullanıcı bulunamadı!");
+    } else if (res.status === 403) {
+      message.error("Şifre yanlış!");
+    } else {
+      message.error("Bir hata oluştu.");
+    }
+
 
       setLoading(false);
     } catch (error) {

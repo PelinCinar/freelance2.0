@@ -5,13 +5,14 @@ import { AuthRoutes } from "./routes/AuthRoutes";
 import { EmployerRoutes } from "./routes/EmployerRoutes";
 import { ChatRoutes } from "./routes/ChatRoutes";
 import { FreelancerRoutes } from "./routes/FreelancerRoutes";
-
+import { AdminRoutes } from "./routes/AdminRoutes";
 
 const router = createBrowserRouter([
   HomeRoutes,
   AuthRoutes,
   ...EmployerRoutes,
   ...FreelancerRoutes,
+  ...AdminRoutes,
   ChatRoutes,
 ]);
 

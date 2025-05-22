@@ -18,6 +18,7 @@ const uploadRoutes = require("./src/routes/uploadRoutes.js");
 const reviewRoutes = require("./src/routes/reviewRoutes.js");
 const notificationRoutes = require("./src/routes/notificationRoutes.js");
 const paymentRoutes = require("./src/routes/paymentRoutes.js");
+const adminRoutes = require("./src/routes/adminRoutes.js");
 
 const path = require("path");
 
@@ -53,6 +54,7 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api", reviewRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/admin", adminRoutes);
 
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

@@ -1,5 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { Button,  Card, Badge, Skeleton, Typography, Tabs } from "antd";
+import {
+  Button,
+  Card,
+  Badge,
+  Skeleton,
+  Typography,
+  Tabs,
+  Row,
+  Col,
+  Statistic,
+  Space,
+  Tag,
+  Empty,
+  Spin,
+  message
+} from "antd";
 import { useNavigate } from "react-router-dom";
 import FreelancerProjectsModal from "../../components/Modals/FreelancerProjectsModal";
 import {
@@ -7,6 +22,10 @@ import {
   CheckCircleOutlined,
   ClockCircleOutlined,
   FileTextOutlined,
+  ProjectOutlined,
+  MessageOutlined,
+  EditOutlined,
+  TeamOutlined
 } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
@@ -17,6 +36,13 @@ const FreelancerProjects = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedBid, setSelectedBid] = useState(null);
   const [activeTab, setActiveTab] = useState("all");
+  const [stats, setStats] = useState({
+    total: 0,
+    pending: 0,
+    active: 0,
+    completed: 0,
+    totalEarnings: 0
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,11 +59,25 @@ const FreelancerProjects = () => {
 
         if (data.success) {
           setProjects(data.data);
+
+          // İstatistikleri hesapla
+          const projectStats = {
+            total: data.data.length,
+            pending: data.data.filter(bid => bid.status === "pending").length,
+            active: data.data.filter(bid => bid.status === "accepted" && bid.project.status !== "completed").length,
+            completed: data.data.filter(bid => bid.project.status === "completed").length,
+            totalEarnings: data.data
+              .filter(bid => bid.project.status === "completed")
+              .reduce((sum, bid) => sum + (bid.amount || 0), 0)
+          };
+          setStats(projectStats);
         } else {
           console.error("Projeler alınamadı:", data.message);
+          message.error("Projeler yüklenirken bir hata oluştu.");
         }
       } catch (error) {
         console.error("Veri çekerken bir hata oluştu:", error);
+        message.error("Sunucuya ulaşılamadı.");
       } finally {
         setLoading(false);
       }
@@ -87,7 +127,12 @@ const FreelancerProjects = () => {
     setIsModalVisible(true);
   };
 
-  const handleModalOk = (updatedAmount, updatedMessage) => {
+  const handleEditBid = (bid) => {
+    setSelectedBid(bid);
+    setIsModalVisible(true);
+  };
+
+  const handleSubmitBid = (updatedAmount, updatedMessage) => {
     setProjects((prevProjects) =>
       prevProjects.map((project) =>
         project._id === selectedBid._id
@@ -98,7 +143,17 @@ const FreelancerProjects = () => {
     setIsModalVisible(false);
   };
 
-  if (loading) return <Skeleton active />;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Spin size="large">
+          <div className="p-8">
+            <Text>Projeler yükleniyor...</Text>
+          </div>
+        </Spin>
+      </div>
+    );
+  }
 
   const filteredProjects =
     activeTab === "all"
@@ -112,116 +167,245 @@ const FreelancerProjects = () => {
         );
 
   return (
-    <div style={{ padding: "20px", maxWidth: "1200px", margin: "0 auto" }}>
-      <Title level={2}>Statusu open olan tüm projeler ve benim teklif verdiklerim cart curt</Title>
+    <div className="p-6 space-y-6">
+      {/* Başlık */}
+      <div className="mb-6">
+        <Title level={2} className="mb-2">Freelancer Projelerim</Title>
+        <Text type="secondary">Teklif verdiğiniz ve üzerinde çalıştığınız projeler</Text>
+      </div>
 
-      <Tabs
-        defaultActiveKey="all"
-        activeKey={activeTab}
-        onChange={setActiveTab}
-        className="mb-8"
-      >
-        <Tabs.TabPane tab="Tümü" key="all" />
-        <Tabs.TabPane tab="Bekleyen" key="pending" />
-        <Tabs.TabPane tab="Aktif" key="active" />
-        <Tabs.TabPane tab="Tamamlanan" key="completed" />
-      </Tabs>
-
-      {filteredProjects.length === 0 ? (
-        <Text type="secondary">Henüz açık proje bulunmamaktadır.</Text>
-      ) : (
-        filteredProjects.map((bid) => (
-          <Card
-            key={bid._id}
-            title={<Title level={4}>{bid.project.title}</Title>}
-            extra={getDurumEtiketi(bid)}
-            style={{
-              marginBottom: "20px",
-              hoverable: true,
-              ...getCardStyle(bid),
-            }}
-          >
-            <div style={{ marginBottom: "1rem" }}>
-              <Text strong style={{ display: "block", marginBottom: "4px" }}>
-                Proje Açıklaması:
-              </Text>
-              <Text>{bid.project.description}</Text>
-
-              <div style={{ marginTop: "0.5rem" }}>
-                <Text strong>Proje Bütçesi:</Text> <Text>${bid.project.budget}</Text>
-              </div>
-            </div>
-
-            <div
-              style={{
-                marginBottom: "1rem",
-                borderTop: "1px solid #f0f0f0",
-                paddingTop: "1rem",
-              }}
-            >
-              <Text strong style={{ display: "block", marginBottom: "4px" }}>
-                Verdiğiniz Teklif:
-              </Text>
-              <div>
-                <Text strong>Tutar:</Text> <Text>${bid.amount}</Text>
-              </div>
-              <div>
-                <Text strong>Mesaj:</Text> <Text>{bid.message}</Text>
-              </div>
-            </div>
-
-            <div style={{ marginTop: "12px" }}>
-              <Button
-                type="primary"
-                onClick={() => startChat(bid.project._id)}
-                disabled={
-                  !(
-                    bid.status === "accepted" &&
-                    (bid.project.status === "in-progress" ||
-                      bid.project.status === "completed")
-                  )
-                }
-              >
-                Sohbete Başla
-              </Button>
-            </div>
-
-            {!(bid.status === "accepted") && (
-              <Text style={{ color: "gray", display: "block", marginTop: "8px" }}>
-                Teklifiniz henüz kabul edilmediği için sohbet başlatamazsınız.
-              </Text>
-            )}
-            {bid.status === "accepted" && bid.project.status === "open" && (
-              <Text style={{ color: "gray", display: "block", marginTop: "8px" }}>
-                Proje henüz başlamadı. Sohbet aktif değil.
-              </Text>
-            )}
-
-            {bid.status === "pending" ? (
-              <Button
-                type="dashed"
-                onClick={() => showUpdateModal(bid)}
-                style={{ marginTop: "10px" }}
-              >
-                Teklifimi Güncelle
-              </Button>
-            ) : (
-              <p style={{ color: "gray", marginTop: "10px" }}>
-                Bu aşamada teklif güncellenemez.
-              </p>
-            )}
+      {/* İstatistikler */}
+      <Row gutter={[24, 24]}>
+        <Col xs={24} sm={6}>
+          <Card className="text-center hover:shadow-lg transition-shadow">
+            <Statistic
+              title="Toplam Proje"
+              value={stats.total}
+              prefix={<ProjectOutlined style={{ color: '#1890ff' }} />}
+              valueStyle={{ color: '#1890ff' }}
+            />
           </Card>
-        ))
-      )}
+        </Col>
+        <Col xs={24} sm={6}>
+          <Card className="text-center hover:shadow-lg transition-shadow">
+            <Statistic
+              title="Bekleyen Teklif"
+              value={stats.pending}
+              prefix={<ClockCircleOutlined style={{ color: '#faad14' }} />}
+              valueStyle={{ color: '#faad14' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={6}>
+          <Card className="text-center hover:shadow-lg transition-shadow">
+            <Statistic
+              title="Aktif Proje"
+              value={stats.active}
+              prefix={<TeamOutlined style={{ color: '#722ed1' }} />}
+              valueStyle={{ color: '#722ed1' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={6}>
+          <Card className="text-center hover:shadow-lg transition-shadow">
+            <Statistic
+              title="Toplam Kazanç"
+              value={stats.totalEarnings}
+              prefix={<DollarOutlined style={{ color: '#52c41a' }} />}
+              suffix="₺"
+              valueStyle={{ color: '#52c41a' }}
+            />
+          </Card>
+        </Col>
+      </Row>
 
-      {selectedBid && (
-        <FreelancerProjectsModal
-          visible={isModalVisible}
-          onCancel={() => setIsModalVisible(false)}
-          onOk={handleModalOk}
-          bid={selectedBid}
+      {/* Tabs */}
+      <Card className="shadow-sm">
+        <Tabs
+          defaultActiveKey="all"
+          activeKey={activeTab}
+          onChange={setActiveTab}
+          items={[
+            {
+              key: "all",
+              label: (
+                <Space>
+                  <ProjectOutlined />
+                  <span>Tümü</span>
+                  <Badge count={stats.total} style={{ backgroundColor: '#1890ff' }} />
+                </Space>
+              )
+            },
+            {
+              key: "pending",
+              label: (
+                <Space>
+                  <ClockCircleOutlined />
+                  <span>Bekleyen</span>
+                  <Badge count={stats.pending} style={{ backgroundColor: '#faad14' }} />
+                </Space>
+              )
+            },
+            {
+              key: "active",
+              label: (
+                <Space>
+                  <TeamOutlined />
+                  <span>Aktif</span>
+                  <Badge count={stats.active} style={{ backgroundColor: '#722ed1' }} />
+                </Space>
+              )
+            },
+            {
+              key: "completed",
+              label: (
+                <Space>
+                  <CheckCircleOutlined />
+                  <span>Tamamlanan</span>
+                  <Badge count={stats.completed} style={{ backgroundColor: '#52c41a' }} />
+                </Space>
+              )
+            }
+          ]}
         />
-      )}
+      </Card>
+
+      {/* Projeler */}
+      <Card
+        title={
+          <Space>
+            <ProjectOutlined />
+            <span>Projeler ({filteredProjects.length})</span>
+          </Space>
+        }
+        className="shadow-lg"
+      >
+        {filteredProjects.length === 0 ? (
+          <Empty
+            description="Bu kategoride proje bulunmamaktadır."
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+          />
+        ) : (
+          <Row gutter={[24, 24]}>
+            {filteredProjects.map((bid) => (
+              <Col xs={24} sm={12} lg={8} key={bid._id}>
+                <Card
+                  className="hover:shadow-lg transition-all duration-300 h-full"
+                  actions={[
+                    bid.status === "accepted" ? (
+                      <Button
+                        key="chat"
+                        type="primary"
+                        icon={<MessageOutlined />}
+                        onClick={() => navigate(`/chat/${bid.project._id}`)}
+                      >
+                        Sohbet Et
+                      </Button>
+                    ) : bid.status === "pending" ? (
+                      <Button
+                        key="edit"
+                        type="link"
+                        icon={<EditOutlined />}
+                        onClick={() => handleEditBid(bid)}
+                      >
+                        Düzenle
+                      </Button>
+                    ) : (
+                      <Button
+                        key="rejected"
+                        type="link"
+                        disabled
+                        icon={<CloseCircleOutlined />}
+                      >
+                        Reddedildi
+                      </Button>
+                    )
+                  ]}
+                >
+                  <div className="space-y-3">
+                    {/* Başlık ve Durum */}
+                    <div className="flex justify-between items-start">
+                      <Title level={5} className="mb-0 flex-1 mr-2">
+                        {bid.project.title}
+                      </Title>
+                      {getDurumEtiketi(bid)}
+                    </div>
+
+                    {/* Açıklama */}
+                    <Text type="secondary" className="block">
+                      {bid.project.description.length > 100
+                        ? `${bid.project.description.substring(0, 100)}...`
+                        : bid.project.description}
+                    </Text>
+
+                    {/* Proje Bilgileri */}
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <Text strong>Proje Bütçesi:</Text>
+                        <Text className="text-blue-600 font-semibold">
+                          {bid.project.budget}₺
+                        </Text>
+                      </div>
+                      <div className="flex justify-between">
+                        <Text strong>Benim Teklifim:</Text>
+                        <Text className="text-green-600 font-semibold">
+                          {bid.amount}₺
+                        </Text>
+                      </div>
+                      <div className="flex justify-between">
+                        <Text strong>Teklif Tarihi:</Text>
+                        <Text type="secondary">
+                          {new Date(bid.createdAt).toLocaleDateString('tr-TR')}
+                        </Text>
+                      </div>
+                    </div>
+
+                    {/* Teklif Mesajı */}
+                    {bid.message && (
+                      <div className="pt-2 border-t border-gray-100">
+                        <Text type="secondary" className="text-xs block mb-1">
+                          Teklif Mesajım:
+                        </Text>
+                        <Text className="text-sm">
+                          {bid.message.length > 80
+                            ? `${bid.message.substring(0, 80)}...`
+                            : bid.message}
+                        </Text>
+                      </div>
+                    )}
+
+                    {/* Durum Göstergesi */}
+                    <div className="pt-2">
+                      {bid.status === "accepted" && bid.project.status !== "completed" && (
+                        <Tag color="processing" icon={<TeamOutlined />}>
+                          Aktif Çalışıyor
+                        </Tag>
+                      )}
+                      {bid.status === "pending" && (
+                        <Tag color="warning" icon={<ClockCircleOutlined />}>
+                          Cevap Bekleniyor
+                        </Tag>
+                      )}
+                      {bid.project.status === "completed" && (
+                        <Tag color="success" icon={<CheckCircleOutlined />}>
+                          Proje Tamamlandı
+                        </Tag>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+        )}
+      </Card>
+
+      <FreelancerProjectsModal
+        visible={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        onSubmit={handleSubmitBid}
+        bid={selectedBid}
+      />
     </div>
   );
 };

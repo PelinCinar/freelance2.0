@@ -21,6 +21,14 @@ const UserSchema = new mongoose.Schema(
       enum: [ROLES.ADMIN, ROLES.EMPLOYER, ROLES.FREELANCER],
       default: ROLES.FREELANCER,
     },
+    profileImage: {
+      fileName: String,
+      fileUrl: String,
+      uploadedAt: {
+        type: Date,
+        default: Date.now,
+      },
+    },
     portfolio: [
       {
         fileName: String,

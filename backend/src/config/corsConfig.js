@@ -19,10 +19,11 @@ const corsOptions = {
     }
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Content-Type", "Authorization", "Accept", "Origin", "X-Requested-With"],
+  exposedHeaders: ["Content-Length", "Content-Type"],
   credentials: true,
   maxAge: 86400, // 24 saat
 };
 
 // Express'e CORS'u ekle
-module.exports = corsOptions; 
+module.exports = corsOptions;

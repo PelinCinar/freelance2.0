@@ -14,12 +14,12 @@ router.post(
 );
 
 // Yorum güncelle (sadece yorum sahibi işveren)
-router.put(
-  "/reviews/:reviewId",
-  auth.verifyAccessToken,
-  checkRole(ROLES.EMPLOYER),
-  reviewController.updateReview
-);
+// router.put(
+//   "/reviews/:reviewId",
+//   auth.verifyAccessToken,
+//   checkRole(ROLES.EMPLOYER),
+//   reviewController.updateReview
+// );
 
 // Yorum sil (sadece yorum sahibi işveren)
 router.delete(
@@ -34,6 +34,22 @@ router.get(
   "/freelancers/:freelancerId/reviews",
   auth.verifyAccessToken,
   reviewController.getFreelancerReviews
+);
+
+// Kullanıcının yaptığı yorumları getir (sadece işveren)
+router.get(
+  "/reviews/my-reviews",
+  auth.verifyAccessToken,
+  checkRole(ROLES.EMPLOYER),
+  reviewController.getMyReviews
+);
+
+// Review güncelleme (yeni endpoint - ID ile)
+router.put(
+  "/reviews/:id",
+  auth.verifyAccessToken,
+  checkRole(ROLES.EMPLOYER),
+  reviewController.updateReview
 );
 
 module.exports = router;

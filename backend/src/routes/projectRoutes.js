@@ -53,6 +53,14 @@ router.get(
   projectController.getMyProjects
 );
 
+// Tamamlanan projeleri getir (işverenler için)
+router.get(
+  "/completed",
+  authMiddleware.verifyAccessToken,
+  checkRole(ROLES.EMPLOYER),
+  projectController.getCompletedProjects
+);
+
 router.get(
   "/:id",
   authMiddleware.verifyAccessToken,

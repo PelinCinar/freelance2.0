@@ -33,7 +33,9 @@ const app = express();
 
 
 // Middleware
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 app.use(cors(corsOptions));
 //!Stripe webhook için özel middlewareİmza doğrulama
 app.post(
@@ -57,8 +59,21 @@ app.use("/api/payments", paymentRoutes);
 app.use("/api/admin", adminRoutes);
 
 
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
- //uploads klasöründeki dosyaları statik olarak sunar vee  tarayıcıya gelen istekler doğru şekilde işler
+// Static file serving
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+  setHeaders: (res, path) => {
+    res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.set('Access-Control-Allow-Origin', '*');
+  }
+}));
+
+app.use('/images', express.static(path.join(__dirname, 'images'), {
+  setHeaders: (res, path) => {
+    res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.set('Access-Control-Allow-Origin', '*');
+  }
+}));
+ //uploads ve images klasöründeki dosyaları statik olarak sunar
 
 
 // Swagger dokümantasyonu

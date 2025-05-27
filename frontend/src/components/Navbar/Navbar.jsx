@@ -100,7 +100,7 @@ const Navbar = () => {
     // Socket bağlantısını dinle ve bildirimleri güncelle
     useEffect(() => {
         const handleNewNotification = (notification) => {
-            // Kullanıcının kendi gönderdiği bildirimleri saymamak için 
+            // Kullanıcının kendi gönderdiği bildirimleri saymamak için
             if (user && notification.user !== user._id) {
                 setNotifications(prev => [notification, ...prev]);
                 setNotificationCount(prevCount => prevCount + 1);
@@ -115,8 +115,8 @@ const Navbar = () => {
     }, [user]);
 
     return (
-        <header className="sticky top-0 z-50 w-full border-b bg-white backdrop-blur">
-            <div className="container mx-auto px-32 py-4 flex justify-between items-center">
+        <header className="sticky top-0 z-50 w-full border-b p-3 bg-white backdrop-blur">
+            <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 16px' }} className="py-4 flex justify-between items-center">
                 <Link to="/" className="hidden font-bold text-slate-700 sm:inline-block text-2xl">
                     FreeLance
                 </Link>

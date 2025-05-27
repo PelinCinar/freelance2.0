@@ -17,7 +17,7 @@ const router = createBrowserRouter([
 ]);
 
 const App = () => {
-  return <RouterProvider router={router} />; // RouterProvider kullanarak router'ı sağlıyoruz
+  return <RouterProvider router={router} />;//RouterProvider kullanarak router'ı sağlıyoruzW
 };
 
 export default App;

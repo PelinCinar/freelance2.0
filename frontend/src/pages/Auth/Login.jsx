@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Input, Button, Checkbox, Form, Card, Typography, message } from "antd";
+import { Input, Button, Checkbox, Form, Card, Typography, message, Row, Col } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
-
+import Navbar from "../../components/Navbar/Navbar";
 const { Title, Text } = Typography;
 
 export default function LoginPage() {
@@ -20,7 +20,7 @@ export default function LoginPage() {
         credentials: "include", // Cookie'yi gönder ve al
       });
 
-    
+
     if (res.status === 200) {
       const data = await res.json();
       message.success("Giriş işlemi başarılı.");
@@ -49,60 +49,91 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="container flex h-screen w-screen flex-col items-center justify-center">
-      <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-        <div className="flex flex-col space-y-2 text-center">
-          <Title level={2}>Giriş Yap</Title>
-          <Text type="secondary">Hesabınıza giriş yaparak devam edin</Text>
-        </div>
-        <Card>
-          <Form
-            name="login"
-            initialValues={{ remember: true }}
-            onFinish={onFinish}
-            className="space-y-4"
-          >
-            <Form.Item
-              name="email"
-              rules={[{ required: true, message: "E-posta adresinizi girin!" }]}
-            >
-              <Input
-                prefix={<UserOutlined />}
-                placeholder="E-posta"
-                type="email"
-                autoComplete="email"
-              />
-            </Form.Item>
+  <>
+  <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 16px', width: '100%' }}>
+        <Row justify="center" align="middle" style={{ minHeight: 'calc(100vh - 200px)' }}>
+          <Col xs={24} sm={20} md={16} lg={12} xl={8}>
+            <div className="space-y-6">
+              <div className="text-center">
+                <Title level={2} className="mb-2">Giriş Yap</Title>
+                <Text type="secondary" className="text-base">
+                  Hesabınıza giriş yaparak devam edin
+                </Text>
+              </div>
 
-            <Form.Item
-              name="password"
-              rules={[{ required: true, message: "Şifrenizi girin!" }]}
-            >
-              <Input.Password
-                prefix={<LockOutlined />}
-                placeholder="Şifre"
-                autoComplete="current-password"
-              />
-            </Form.Item>
+              <Card
+                className="shadow-lg border-0"
+                styles={{ body: { padding: '32px' } }}
+              >
+                <Form
+                  name="login"
+                  initialValues={{ remember: true }}
+                  onFinish={onFinish}
+                  layout="vertical"
+                  size="large"
+                >
+                  <Form.Item
+                    name="email"
+                    label="E-posta"
+                    rules={[
+                      { required: true, message: "E-posta adresinizi girin!" },
+                      { type: "email", message: "Geçerli bir e-posta adresi girin!" }
+                    ]}
+                  >
+                    <Input
+                      prefix={<UserOutlined />}
+                      placeholder="E-posta adresinizi girin"
+                      type="email"
+                      autoComplete="email"
+                    />
+                  </Form.Item>
 
-            <Form.Item name="remember" valuePropName="checked">
-              <Checkbox>Beni Hatırla</Checkbox>
-            </Form.Item>
+                  <Form.Item
+                    name="password"
+                    label="Şifre"
+                    rules={[{ required: true, message: "Şifrenizi girin!" }]}
+                  >
+                    <Input.Password
+                      prefix={<LockOutlined />}
+                      placeholder="Şifrenizi girin"
+                      autoComplete="current-password"
+                    />
+                  </Form.Item>
 
-            <Form.Item>
-              <Button type="primary" htmlType="submit" block loading={loading}>
-                Giriş Yap
-              </Button>
-            </Form.Item>
-          </Form>
-        </Card>
-        <div className="text-center text-sm">
-          Hesabınız yok mu?{" "}
-          <Link to="/register" className="underline hover:text-primary">
-            Kayıt Ol
-          </Link>
-        </div>
+                  <Form.Item name="remember" valuePropName="checked">
+                    <Checkbox>Beni Hatırla</Checkbox>
+                  </Form.Item>
+
+                  <Form.Item className="mb-0">
+                    <Button
+                      type="primary"
+                      htmlType="submit"
+                      block
+                      loading={loading}
+                      size="large"
+                    >
+                      Giriş Yap
+                    </Button>
+                  </Form.Item>
+                </Form>
+              </Card>
+
+              <div className="text-center">
+                <Text className="text-base">
+                  Hesabınız yok mu?{" "}
+                  <Link
+                    to="/register"
+                    className="text-blue-600 hover:text-blue-800 font-medium"
+                  >
+                    Kayıt Ol
+                  </Link>
+                </Text>
+              </div>
+            </div>
+          </Col>
+        </Row>
       </div>
-    </div>
+    </div></>
   );
 }

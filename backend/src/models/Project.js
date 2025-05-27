@@ -16,6 +16,19 @@ const projectSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    category: {
+      type: String,
+      enum: ["web", "mobile", "design", "other"],
+      required: true,
+    },
+    tags: [{
+      type: String,
+      trim: true,
+    }],
+    deadline: {
+      type: Date,
+      required: false,
+    },
     employer: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

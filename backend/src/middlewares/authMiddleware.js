@@ -4,9 +4,19 @@ const RefreshToken = require("../models/RefreshToken.js");
 
 // Access token doğrulama middleware'i
 const verifyAccessToken = (req, res, next) => {
-  // Cookie üzerinden access token alıyoruz
-  const token = req.cookies.accessToken;
-  // console.log("Access token:", token);
+  // Cookie üzerinden veya Authorization header'ından access token alıyoruz
+  let token = req.cookies.accessToken;
+
+  // Eğer cookie'de token yoksa, Authorization header'ını kontrol et
+  if (!token && req.headers.authorization) {
+    const authHeader = req.headers.authorization;
+    if (authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7); // "Bearer " kısmını çıkar
+    }
+  }
+
+
+
   // Eğer token yoksa 403 hatası döndürüyoruz
   if (!token) {
     return res.status(403).json({ message: "Access token zorunludur." });
@@ -16,8 +26,7 @@ const verifyAccessToken = (req, res, next) => {
     // Token geçerliliğini kontrol et ve decoded veriyi req.user içine koy
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     req.user = decoded; // Kullanıcıyı req.user ile bir sonraki middleware'e taşıyoruz
-    // console.log('User ID:', req.user._id);
-    next(); 
+    next();
   } catch (error) {
     return res.status(401).json({ message: "Geçersiz veya süresi dolmuş access token." });
   }

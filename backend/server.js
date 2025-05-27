@@ -25,6 +25,9 @@ const io = require("socket.io")(server, {
 // Veritabanına bağlan
 connectDB();
 
+// Socket.io'yu app'e bağla (bildirimler için)
+app.set('io', io);
+
 // Aktif kullanıcıları saklamak için Map
 const activeUsers = new Map();
 

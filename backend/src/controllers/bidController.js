@@ -1,5 +1,6 @@
 const Bid = require("../models/Bid");
 const Project = require("../models/Project");
+const Notification = require("../models/Notification");
 
 //!Proje CRUD işlemleri
 const createBid = async (req, res) => {
@@ -87,7 +88,9 @@ const getBidsByProject = async (req, res) => {
         .json({ success: false, message: "Proje bulunamadı." });
     }
 
-    if (project.employer.toString() !== req.user.id) {
+
+
+    if (project.employer.toString() !== req.user._id.toString()) {
       //işverenin kim olduğunu kontrol edelim
       return res.status(401).json({
         success: false,
@@ -101,6 +104,9 @@ const getBidsByProject = async (req, res) => {
       "name email"
     ); //populete yöntemi ile bid collectiondaki belgeli projectıdye bağlı filtreler yani biz burada project alanı projectıdyle eşeleşen bid kayıtlarını bulundurmuş oluyoruz. user colletiodan name ve email almış olduk peki nasıl usera
     //!freelancer alanındaki ObjectId'yi takip et ve User koleksiyonundan sadece name ve email alanlarını getir.veri tekrarını önle.
+
+
+
     res.status(200).json({
       success: true,
       data: bids,
@@ -195,7 +201,7 @@ const acceptBid = async (req, res) => {
   try {
     const { bidId } = req.params;
 
-    const bid = await Bid.findById(bidId).populate("project");
+    const bid = await Bid.findById(bidId).populate("project").populate("freelancer", "name email");
 
     if (!bid) {
       return res.status(404).json({
@@ -213,14 +219,105 @@ const acceptBid = async (req, res) => {
       });
     }
 
+    // Projenin sahibi mi kontrol et
+    if (project.employer.toString() !== req.user._id.toString()) {
+      return res.status(401).json({
+        success: false,
+        message: "Bu teklifi kabul etme yetkiniz yok.",
+      });
+    }
+
+    // Teklif zaten işlem görmüş mü kontrol et
+    if (bid.status !== "pending") {
+      return res.status(400).json({
+        success: false,
+        message: "Bu teklif zaten işlem görmüş.",
+      });
+    }
+
+    // ÖNEMLİ: Bu projede zaten kabul edilmiş bir teklif var mı kontrol et
+    if (project.acceptedBid) {
+      return res.status(400).json({
+        success: false,
+        message: "Bu projede zaten kabul edilmiş bir teklif bulunmaktadır.",
+      });
+    }
+
+    // Diğer kabul edilmiş teklifler var mı kontrol et (ekstra güvenlik) bu önemlii
+    const existingAcceptedBid = await Bid.findOne({
+      project: project._id,
+      status: "accepted"
+    });
+
+    if (existingAcceptedBid) {
+      return res.status(400).json({
+        success: false,
+        message: "Bu projede zaten kabul edilmiş bir teklif bulunmaktadır.",
+      });
+    }
+
     // Teklifin status'ünü "accepted" yap
     bid.status = "accepted";
     await bid.save();
 
-    // Proje durumunu 'in-progress' yap
-    project.status = "in-progress"; // veya projeyi başlangıçta 'in-progress' olarak güncelleylimm
+    // Proje durumunu 'in-progress' yap ve acceptedBid'i set et
+    project.status = "in-progress";
     project.acceptedBid = bid._id;
     await project.save();
+
+    // DİĞER TÜM TEKLİFLERİ OTOMATIK REDDET
+    await Bid.updateMany(
+      {
+        project: project._id,
+        _id: { $ne: bid._id }, // Kabul edilen teklif hariç
+        status: "pending" // Sadece bekleyen teklifleri reddet
+      },
+      { status: "rejected" }
+    );
+
+    console.log(`✅ Teklif kabul edildi ve diğer teklifler reddedildi: ${project.title}`);
+
+    // Mevcut bildirim sistemine uygun bildirim oluştur
+    const io = req.app.get('io');
+
+    if (bid.freelancer) {
+      try {
+        // Veritabanına bildirim kaydet
+        const notification = new Notification({
+          user: bid.freelancer._id, // Bildirimi alacak freelancer
+          sender: req.user._id, // Bildirimi gönderen employer
+          senderUsername: req.user.name || "İşveren",
+          roomId: project._id, // Proje ID'si room olarak kullanılacak
+          type: "offer", // Teklif türü bildirim
+          message: `"${project.title}" projesindeki ${bid.amount}₺ tutarındaki teklifiniz kabul edildi! Projeye başlayabilirsiniz.`,
+          link: `/chat/${project._id}`, // Sohbet sayfasına yönlendirme linki
+          isRead: false
+        });
+
+        await notification.save();
+
+        // Socket.io ile canlı bildirim gönder
+        if (io) {
+          io.emit("notification", {
+            _id: notification._id,
+            user: bid.freelancer._id,
+            sender: req.user._id,
+            senderUsername: req.user.name || "İşveren",
+            roomId: project._id,
+            type: "offer",
+            message: notification.message,
+            link: notification.link,
+            isRead: false,
+            createdAt: notification.createdAt
+          });
+        }
+
+        console.log(`Bildirim gönderildi: ${bid.freelancer.name} - ${project.title}`);
+      } catch (notificationError) {
+        console.error("Bildirim oluşturulurken hata:", notificationError);
+        // Bildirim hatası ana işlemi etkilemesin
+      }
+    }
 
     return res.status(200).json({
       success: true,
@@ -237,44 +334,87 @@ const acceptBid = async (req, res) => {
 };
 const rejectBid = async (req, res) => {
   try {
-    const { bidId } = req.params; //urldeen bidIdmiz alalımm
+    const { bidId } = req.params;
 
-    // console.log("Gelen bidId:", bidId);
-
-    // Teklif modelimiz içinde bidId aranır ve populete ile telklifin olduğu proje çekilir.
-    const bid = await Bid.findById(bidId).populate("project");
+    const bid = await Bid.findById(bidId).populate("project").populate("freelancer", "name email");
 
     if (!bid) {
-      console.log("Teklif veritabanında bulunamadı.");
       return res.status(404).json({
         success: false,
         message: "Teklif bulunamadı.",
       });
     }
 
-    // console.log("Teklifin bağlı olduğu proje ID'si:", bid.project._id.toString());
-
-    // Teklifin bağlı olduğu projeyi al
     const project = bid.project;
 
     if (!project) {
       return res.status(404).json({
         success: false,
-        message: "Teklifin bağlı olduğu proje bulunamadı.",
+        message: "Proje bulunamadı.",
       });
     }
 
-    //! Eğer teklif zaten kabul edilmişse reddedilemez
-    if (bid.status === "accepted") {
+    // Projenin sahibi mi kontrol et
+    if (project.employer.toString() !== req.user._id.toString()) {
+      return res.status(401).json({
+        success: false,
+        message: "Bu teklifi reddetme yetkiniz yok.",
+      });
+    }
+
+    // Teklif zaten işlem görmüş mü kontrol et
+    if (bid.status !== "pending") {
       return res.status(400).json({
         success: false,
-        message: "Bu teklif zaten kabul edildi, reddedilemez.",
+        message: "Bu teklif zaten işlem görmüş.",
       });
     }
 
     // Teklifin status'ünü "rejected" yap
     bid.status = "rejected";
     await bid.save();
+
+    // Bildirim oluştur (isteğe bağlı)
+    const Notification = require("../models/Notification");
+    const io = req.app.get('io');
+
+    if (bid.freelancer) {
+      try {
+        // Veritabanına bildirim kaydet
+        const notification = new Notification({
+          user: bid.freelancer._id,
+          sender: req.user._id,
+          senderUsername: req.user.name || "İşveren",
+          roomId: project._id,
+          type: "offer",
+          message: `"${project.title}" projesindeki teklifiniz maalesef reddedildi.`,
+          link: `/freelancer-panel/projects`,
+          isRead: false
+        });
+
+        await notification.save();
+
+        // Socket.io ile canlı bildirim gönder
+        if (io) {
+          io.emit("notification", {
+            _id: notification._id,
+            user: bid.freelancer._id,
+            sender: req.user._id,
+            senderUsername: req.user.name || "İşveren",
+            roomId: project._id,
+            type: "offer",
+            message: notification.message,
+            link: notification.link,
+            isRead: false,
+            createdAt: notification.createdAt
+          });
+        }
+
+        console.log(`Ret bildirimi gönderildi: ${bid.freelancer.name} - ${project.title}`);
+      } catch (notificationError) {
+        console.error("Bildirim oluşturulurken hata:", notificationError);
+      }
+    }
 
     return res.status(200).json({
       success: true,

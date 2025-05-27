@@ -1,15 +1,18 @@
 import React from 'react';
 import Navbar from '../components/Navbar/Navbar';
-import { Outlet } from 'react-router-dom'; // 🔥 React Router'dan Outlet'i alıyoruz
+import { Outlet } from 'react-router-dom';
+import { Layout } from 'antd';
+
+const { Content } = Layout;
 
 const HomeLayout = () => {
   return (
-    <div>
+    <Layout className="min-h-screen">
       <Navbar />
-      <main>
-        <Outlet /> {/* 🔥 children yerine burası kullanılmalı */}
-      </main>
-    </div>
+      <Content>
+        <Outlet />
+      </Content>
+    </Layout>
   );
 };
 

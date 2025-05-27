@@ -1,7 +1,7 @@
 import React, {  useState } from "react";
 import { Link } from "react-router-dom";
 import { List, Avatar, Button, Typography } from "antd";
-import { MessageOutlined } from "@ant-design/icons";
+import { MessageOutlined, CheckCircleOutlined, TrophyOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import "dayjs/locale/tr";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -68,6 +68,11 @@ const NotificationList = ({ notifications, markAsRead }) => {
                     icon={<MessageOutlined />}
                     style={{ backgroundColor: "#1890ff" }}
                   />
+                ) : item.type === "offer" ? (
+                  <Avatar
+                    icon={<CheckCircleOutlined />}
+                    style={{ backgroundColor: "#52c41a" }}
+                  />
                 ) : (
                   <Avatar>{item.senderUsername.charAt(0).toUpperCase()}</Avatar>
                 )
@@ -80,14 +85,14 @@ const NotificationList = ({ notifications, markAsRead }) => {
                       {dayjs(item.createdAt).fromNow()}
                     </Text>
                   </div>
-                  {item.type === "message" && item.roomId && (
+                  {(item.type === "message" || item.type === "offer") && item.roomId && (
                     <Link
-                      to={`/chat/${item.roomId}`}
+                      to={item.type === "offer" ? `/chat/${item.roomId}` : `/chat/${item.roomId}`}
                       onClick={() => handleMarkAsReadInternal(item._id)}
                       className="text-blue-500 hover:underline text-sm ml-2"
                       style={{ alignSelf: "center" }}
                     >
-                      Sohbete Git
+                      {item.type === "offer" ? "Projeye Git" : "Sohbete Git"}
                     </Link>
                   )}
                 </div>

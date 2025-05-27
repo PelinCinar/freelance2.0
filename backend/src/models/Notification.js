@@ -5,6 +5,7 @@ const notificationSchema = new mongoose.Schema({
   sender: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // Mesajı gönderen kişi
   roomId: { type: String, required: true },  // Bildirimi ilişkilendirdiğimiz odanın id'si
   type: { type: String, enum: ['message', 'offer', 'review'], default: 'message' },
+  senderUsername: { type: String }, // Gönderen kullanıcının adı
   message: { type: String, required: true }, // Bildirim mesajı
   link: { type: String }, // Bildirime tıklandığında gidilecek sayfa (örneğin: proje, mesaj, teklif)
   isRead: { type: Boolean, default: false }, // Okundu durumu

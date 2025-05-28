@@ -3,30 +3,33 @@
 Freelance 2.0, işverenlerle freelancer'ları bir araya getiren, teklif sistemi, canlı sohbet ve değerlendirme özelliklerine sahip MERN stack tabanlı bir platformdur.
 
 🚀 Özellikler
-Kullanıcı Rolleri: İşveren ve freelancer olmak üzere iki farklı kullanıcı tipi.
+**Kullanıcı Rolleri:** İşveren, freelancer ve admin olmak üzere üç farklı kullanıcı tipi.
 
-Proje Yayınlama: İşverenler, projelerini platformda yayınlayabilir.
+**Proje Yayınlama:** İşverenler, projelerini platformda yayınlayabilir.
 
-Teklif Sistemi: Freelancer'lar projelere teklif sunabilir.
+**Teklif Sistemi:** Freelancer'lar projelere teklif sunabilir.
 
-Canlı Sohbet: İşveren ve freelancer arasında gerçek zamanlı mesajlaşma imkanı.
+**Canlı Sohbet:** İşveren ve freelancer arasında gerçek zamanlı mesajlaşma imkanı.
 
-Değerlendirme Sistemi: Tamamlanan projeler için karşılıklı değerlendirme yapılabilir.
+**Değerlendirme Sistemi:** Tamamlanan projeler için karşılıklı değerlendirme yapılabilir.
 
-JWT ile Kimlik Doğrulama: Güvenli giriş ve yetkilendirme sistemi.
+**JWT ile Kimlik Doğrulama:** Güvenli giriş ve yetkilendirme sistemi.
 
-Bildirimler: Kullanıcılar, kendilerini ilgilendiren olaylar hakkında bilgilendirilir.
+**Bildirimler:** Kullanıcılar, kendilerini ilgilendiren olaylar hakkında bilgilendirilir.
+
+**Ödeme Sistemi:** Stripe entegrasyonu sayesinde güvenli ödeme işlemleri yapılabilir.
+
 
 🛠️ Kullanılan Teknolojiler
-Frontend: React, Vite
+**Frontend:** React, Vite
 
-Backend: Node.js, Express.js
+**Backend:** Node.js, Express.js
 
-Veritabanı: MongoDB
+**Veritabanı:** MongoDB
 
-Gerçek Zamanlı İletişim: Socket.io
+**Gerçek Zamanlı İletişim:** Socket.io
 
-Kimlik Doğrulama: JWT (JSON Web Tokens)
+**Kimlik Doğrulama:** JWT (JSON Web Tokens)
 
 ⚙️ Kurulum
 1-Depoyu Klonlayın:

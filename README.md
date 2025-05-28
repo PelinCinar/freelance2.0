@@ -1,20 +1,20 @@
+Freelance - İŞ PLATFORMU
 Freelance 2.0, işverenlerle freelancer'ları bir araya getiren, teklif sistemi, canlı sohbet ve değerlendirme özelliklerine sahip MERN stack tabanlı bir platformdur.
 
 🚀 Özellikler
-Kullanıcı Rolleri: İşveren ve freelancer olarak iki farklı kullanıcı rolü.
+Kullanıcı Rolleri: İşveren ve freelancer olmak üzere iki farklı kullanıcı tipi.
 
 Proje Yayınlama: İşverenler, projelerini platformda yayınlayabilir.
 
-Teklif Sistemi: Freelancer'lar projelere teklif verebilir.
+Teklif Sistemi: Freelancer'lar projelere teklif sunabilir.
 
-Canlı Sohbet: İşveren ve freelancer arasında gerçek zamanlı mesajlaşma.
+Canlı Sohbet: İşveren ve freelancer arasında gerçek zamanlı mesajlaşma imkanı.
 
-Değerlendirme Sistemi: Tamamlanan projeler için karşılıklı değerlendirme.
+Değerlendirme Sistemi: Tamamlanan projeler için karşılıklı değerlendirme yapılabilir.
 
 JWT ile Kimlik Doğrulama: Güvenli giriş ve yetkilendirme sistemi.
 
-Bildirimler: Kullanıcılar için önemli olaylar hakkında bildirimler.
-GitHub
+Bildirimler: Kullanıcılar, kendilerini ilgilendiren olaylar hakkında bilgilendirilir.
 
 🛠️ Kullanılan Teknolojiler
 Frontend: React, Vite

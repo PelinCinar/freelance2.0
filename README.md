@@ -1,4 +1,5 @@
-Freelance - İŞ PLATFORMU
+*Freelance - İŞ PLATFORMU*
+
 Freelance 2.0, işverenlerle freelancer'ları bir araya getiren, teklif sistemi, canlı sohbet ve değerlendirme özelliklerine sahip MERN stack tabanlı bir platformdur.
 
 🚀 Özellikler

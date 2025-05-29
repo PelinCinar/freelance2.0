@@ -4,6 +4,7 @@ import { Input, Button, Checkbox, Form, Card, Typography, message, Row, Col } fr
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
+import { API_ENDPOINTS } from "../../utils/api";
 const { Title, Text } = Typography;
 
 export default function LoginPage() {
@@ -13,7 +14,7 @@ export default function LoginPage() {
   const onFinish = async (values) => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:8080/api/auth/login", {
+      const res = await fetch(API_ENDPOINTS.LOGIN, {
         method: "POST",
         body: JSON.stringify(values),
         headers: { "Content-type": "application/json; charset=UTF-8" },

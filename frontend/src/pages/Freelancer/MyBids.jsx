@@ -32,6 +32,7 @@ import {
   MessageOutlined
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
+import { API_ENDPOINTS } from "../../utils/api";
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -55,7 +56,7 @@ const MyBids = () => {
   // Teklifleri getir
   const fetchMyBids = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/bids/my-bids", {
+      const res = await fetch(API_ENDPOINTS.MY_BIDS, {
         credentials: "include",
       });
       const data = await res.json();
@@ -102,7 +103,7 @@ const MyBids = () => {
   const handleUpdateBid = async (values) => {
     setUpdating(true);
     try {
-      const res = await fetch(`http://localhost:8080/api/bids/${selectedBid._id}`, {
+      const res = await fetch(API_ENDPOINTS.BID_BY_ID(selectedBid._id), {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

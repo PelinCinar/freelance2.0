@@ -28,6 +28,7 @@ import {
   FilterOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { API_ENDPOINTS } from '../../utils/api';
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -52,7 +53,7 @@ const CompletedProjects = () => {
   const fetchCompletedProjects = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:8080/api/projects/completed", {
+      const res = await fetch(API_ENDPOINTS.COMPLETED_PROJECTS, {
         method: "GET",
         credentials: "include",
       });

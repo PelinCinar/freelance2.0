@@ -30,6 +30,7 @@ import {
   SendOutlined
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
+import { API_ENDPOINTS } from "../../utils/api";
 
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
@@ -49,7 +50,7 @@ const BidStatus = () => {
   // Teklifleri getir
   const fetchMyBids = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/bids/my-bids", {
+      const res = await fetch(API_ENDPOINTS.MY_BIDS, {
         credentials: "include",
       });
       const data = await res.json();

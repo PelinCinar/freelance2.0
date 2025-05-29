@@ -33,6 +33,7 @@ import {
 } from "@ant-design/icons";
 import { jwtDecode } from "jwt-decode";
 import socket from "../../utils/socket";
+import { API_ENDPOINTS } from "../../utils/api";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -58,7 +59,7 @@ const ChatPage = () => {
     // Proje bilgilerini çek
     const fetchProjectInfo = async () => {
         try {
-            const res = await fetch(`http://localhost:8080/api/projects/${projectId}`, {
+            const res = await fetch(API_ENDPOINTS.PROJECT_BY_ID(projectId), {
                 credentials: "include",
             });
             if (res.ok) {

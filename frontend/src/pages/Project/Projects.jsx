@@ -33,6 +33,7 @@ import {
   ExclamationCircleOutlined,
   PlusOutlined
 } from "@ant-design/icons";
+import { API_ENDPOINTS } from "../../utils/api";
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -57,7 +58,7 @@ const Projects = () => {
     const fetchProjects = async () => {
       try {
         const res = await fetch(
-          "http://localhost:8080/api/projects/my-projects",
+          API_ENDPOINTS.MY_PROJECTS,
           {
             credentials: "include",
           }

@@ -27,6 +27,7 @@ import {
   StarOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { API_ENDPOINTS } from '../../utils/api';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -44,7 +45,7 @@ const EmployerDashboard = () => {
   // API'den tamamlanan projeleri çek
   const fetchCompletedProjects = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/projects/completed", {
+      const res = await fetch(API_ENDPOINTS.COMPLETED_PROJECTS, {
         method: "GET",
         credentials: "include",
       });
@@ -72,7 +73,7 @@ const EmployerDashboard = () => {
   // Tüm projeleri çek (toplam proje sayısı için)
   const fetchAllProjects = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/projects/my-projects", {
+      const res = await fetch(API_ENDPOINTS.MY_PROJECTS, {
         method: "GET",
         credentials: "include",
       });

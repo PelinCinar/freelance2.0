@@ -28,6 +28,7 @@ import {
   ClockCircleOutlined,
   EyeOutlined
 } from "@ant-design/icons";
+import { API_ENDPOINTS } from "../../utils/api";
 import { useNavigate } from "react-router-dom";
 
 const { Title, Text, Paragraph } = Typography;
@@ -46,7 +47,7 @@ const OpenProjects = () => {
   // Açık projeleri getir
   const fetchOpenProjects = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/projects", {
+      const res = await fetch(API_ENDPOINTS.PROJECTS, {
         credentials: "include",
       });
       const data = await res.json();
@@ -64,7 +65,7 @@ const OpenProjects = () => {
   // Kendi tekliflerimi getir
   const fetchMyBids = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/bids/my-bids", {
+      const res = await fetch(API_ENDPOINTS.MY_BIDS, {
         credentials: "include",
       });
       const data = await res.json();
@@ -96,7 +97,7 @@ const OpenProjects = () => {
   const handleSubmitBid = async (values) => {
     setSubmittingBid(true);
     try {
-      const res = await fetch(`http://localhost:8080/api/bids/${selectedProject._id}`, {
+      const res = await fetch(API_ENDPOINTS.BID_BY_ID(selectedProject._id), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

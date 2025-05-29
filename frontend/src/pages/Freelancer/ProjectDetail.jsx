@@ -31,6 +31,7 @@ import {
   MessageOutlined
 } from "@ant-design/icons";
 import { useParams, useNavigate } from "react-router-dom";
+import { API_ENDPOINTS } from "../../utils/api";
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -48,7 +49,7 @@ const ProjectDetail = () => {
   // Proje detayını getir
   const fetchProjectDetail = async () => {
     try {
-      const res = await fetch(`http://localhost:8080/api/projects/${id}`, {
+      const res = await fetch(API_ENDPOINTS.PROJECT_BY_ID(id), {
         credentials: "include",
       });
       const data = await res.json();
@@ -68,7 +69,7 @@ const ProjectDetail = () => {
   // Kendi teklifimi kontrol et
   const checkMyBid = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/bids/my-bids", {
+      const res = await fetch(API_ENDPOINTS.MY_BIDS, {
         credentials: "include",
       });
       const data = await res.json();
@@ -94,7 +95,7 @@ const ProjectDetail = () => {
   const handleSubmitBid = async (values) => {
     setSubmittingBid(true);
     try {
-      const res = await fetch(`http://localhost:8080/api/bids/${id}`, {
+      const res = await fetch(API_ENDPOINTS.BID_BY_ID(id), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -111,7 +112,7 @@ const ProjectDetail = () => {
         message.success("🎉 Teklifiniz başarıyla gönderildi!");
         setBidModalVisible(false);
         bidForm.resetFields();
-        
+
         // Verileri yenile
         await Promise.all([fetchProjectDetail(), checkMyBid()]);
       } else {
@@ -129,7 +130,7 @@ const ProjectDetail = () => {
   const getCategoryColor = (category) => {
     const colors = {
       web: "blue",
-      mobile: "green", 
+      mobile: "green",
       design: "purple",
       other: "orange"
     };
@@ -200,14 +201,14 @@ const ProjectDetail = () => {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-6">
-          <Button 
-            icon={<ArrowLeftOutlined />} 
+          <Button
+            icon={<ArrowLeftOutlined />}
             onClick={() => navigate(-1)}
             className="mb-4"
           >
             Geri Dön
           </Button>
-          
+
           <Card className="shadow-lg">
             <div className="flex justify-between items-start mb-4">
               <div className="flex-1">
@@ -215,7 +216,7 @@ const ProjectDetail = () => {
                   <ProjectOutlined className="mr-2" />
                   {project.title}
                 </Title>
-                
+
                 <Space wrap className="mb-4">
                   <Tag color={getCategoryColor(project.category)} size="large">
                     {getCategoryIcon(project.category)} {project.category || 'Diğer'}
@@ -233,13 +234,13 @@ const ProjectDetail = () => {
                   )}
                 </Space>
               </div>
-              
+
               {/* Teklif Durumu */}
               <div className="text-right">
                 {myBid ? (
                   <div>
-                    <Tag 
-                      color={getStatusColor(myBid.status)} 
+                    <Tag
+                      color={getStatusColor(myBid.status)}
                       icon={getStatusIcon(myBid.status)}
                       size="large"
                     >
@@ -282,12 +283,12 @@ const ProjectDetail = () => {
         {/* Proje Detayları */}
         <Card title="Proje Detayları" className="mb-6 shadow-lg">
           <Descriptions column={2} bordered>
-            <Descriptions.Item 
+            <Descriptions.Item
               label={<><UserOutlined className="mr-2" />İşveren</>}
             >
               <Space>
                 <Avatar
-                  src={project.employer?.profileImage?.fileName ? 
+                  src={project.employer?.profileImage?.fileName ?
                     `http://localhost:8080/api/upload/image/${project.employer.profileImage.fileName}` : null}
                   icon={<UserOutlined />}
                   size="small"
@@ -296,7 +297,7 @@ const ProjectDetail = () => {
               </Space>
             </Descriptions.Item>
 
-            <Descriptions.Item 
+            <Descriptions.Item
               label={<><DollarOutlined className="mr-2" />Bütçe</>}
             >
               <Text strong className="text-green-600">
@@ -304,28 +305,28 @@ const ProjectDetail = () => {
               </Text>
             </Descriptions.Item>
 
-            <Descriptions.Item 
+            <Descriptions.Item
               label={<><CalendarOutlined className="mr-2" />Son Teklif Tarihi</>}
             >
-              {project.deadline ? 
-                new Date(project.deadline).toLocaleDateString('tr-TR') : 
+              {project.deadline ?
+                new Date(project.deadline).toLocaleDateString('tr-TR') :
                 'Belirtilmemiş'
               }
             </Descriptions.Item>
 
-            <Descriptions.Item 
+            <Descriptions.Item
               label={<><TeamOutlined className="mr-2" />Teklif Sayısı</>}
             >
               <Badge count={project.bids?.length || 0} style={{ backgroundColor: '#1890ff' }} />
             </Descriptions.Item>
 
-            <Descriptions.Item 
+            <Descriptions.Item
               label={<><CalendarOutlined className="mr-2" />Oluşturulma Tarihi</>}
             >
               {new Date(project.createdAt).toLocaleDateString('tr-TR')}
             </Descriptions.Item>
 
-            <Descriptions.Item 
+            <Descriptions.Item
               label={<><ProjectOutlined className="mr-2" />Proje Durumu</>}
             >
               <Tag color={project.status === 'open' ? 'green' : 'red'}>
@@ -337,7 +338,7 @@ const ProjectDetail = () => {
 
         {/* Kendi Teklifim */}
         {myBid && (
-          <Card 
+          <Card
             title={
               <Space>
                 <MessageOutlined />

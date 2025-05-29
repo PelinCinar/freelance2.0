@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { API_ENDPOINTS } from "../../utils/api";
 
 const AdminDashboardPage = () => {
   const [stats, setStats] = useState(null);
@@ -7,7 +8,7 @@ const AdminDashboardPage = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await fetch("http://localhost:8080/api/admin/dashboard", {
+        const res = await fetch(API_ENDPOINTS.ADMIN_DASHBOARD, {
           method: "GET",
           credentials: "include", // Eğer httpOnly cookie ile token gönderiyorsan bunu eklemelisin
         });

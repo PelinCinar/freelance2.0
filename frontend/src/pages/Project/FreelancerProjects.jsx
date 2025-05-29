@@ -25,7 +25,8 @@ import {
   ProjectOutlined,
   MessageOutlined,
   EditOutlined,
-  TeamOutlined
+  TeamOutlined,
+  CloseCircleOutlined
 } from "@ant-design/icons";
 
 const { Title, Text } = Typography;

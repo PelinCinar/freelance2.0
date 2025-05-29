@@ -1,6 +1,7 @@
 const Project = require("../models/Project.js");
 const Bid = require("../models/Bid.js");
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const mongoose = require('mongoose');
 
 
 // Proje oluşturma (default status: 'open')
@@ -327,8 +328,18 @@ const calculateProjectDuration = (startDate, endDate) => {
 // Belirli bir projeyi ID'ye göre getir
 const getProjectById = async (req, res) => {
   const { id } = req.params;
+
+  // ObjectId validation
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({
+      success: false,
+      message: "Geçersiz proje ID'si"
+    });
+  }
+
   try {
     const project = await Project.findById(id)
+      .populate('employer', 'name email profileImage rating') // Employer bilgilerini ekle
       .populate('bids')
       .populate({
         path: 'acceptedBid',

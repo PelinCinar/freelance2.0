@@ -1,5 +1,14 @@
 import { NavLink } from "react-router-dom";
-import { FaLayerGroup, FaUserAlt, FaProjectDiagram } from "react-icons/fa";
+import {
+  FaLayerGroup,
+  FaUserAlt,
+  FaProjectDiagram,
+  FaPaperPlane,
+  FaFolderOpen,
+  FaClock,
+  FaCheckCircle,
+  FaTimesCircle
+} from "react-icons/fa";
 
 const FreelancerSidebar = () => {
   return (
@@ -28,6 +37,54 @@ const FreelancerSidebar = () => {
           </NavLink>
 
           <NavLink
+            to="/freelancer-panel/my-bids"
+            className={({ isActive }) =>
+              `px-4 py-2 rounded-md border flex items-center gap-x-2 transition-all
+              ${
+                isActive
+                  ? "bg-green-100 text-green-600 font-semibold"
+                  : "bg-zinc-50 hover:bg-zinc-100 text-zinc-600"
+              }`
+            }
+          >
+            <FaPaperPlane size={20} />
+            <span className="lg:flex hidden">Toplam Tekliflerim</span>
+            <span className="lg:hidden flex">T</span>
+          </NavLink>
+
+          <NavLink
+            to="/freelancer-panel/open-projects"
+            className={({ isActive }) =>
+              `px-4 py-2 rounded-md border flex items-center gap-x-2 transition-all
+              ${
+                isActive
+                  ? "bg-purple-100 text-purple-600 font-semibold"
+                  : "bg-zinc-50 hover:bg-zinc-100 text-zinc-600"
+              }`
+            }
+          >
+            <FaFolderOpen size={20} />
+            <span className="lg:flex hidden">Açık Projeler</span>
+            <span className="lg:hidden flex">A</span>
+          </NavLink>
+
+          <NavLink
+            to="/freelancer-panel/bid-status"
+            className={({ isActive }) =>
+              `px-4 py-2 rounded-md border flex items-center gap-x-2 transition-all
+              ${
+                isActive
+                  ? "bg-orange-100 text-orange-600 font-semibold"
+                  : "bg-zinc-50 hover:bg-zinc-100 text-zinc-600"
+              }`
+            }
+          >
+            <FaClock size={20} />
+            <span className="lg:flex hidden">Teklif Durumları</span>
+            <span className="lg:hidden flex">D</span>
+          </NavLink>
+
+          <NavLink
             to="/freelancer-panel/projects"
             className={({ isActive }) =>
               `px-4 py-2 rounded-md border flex items-center gap-x-2 transition-all
@@ -39,7 +96,7 @@ const FreelancerSidebar = () => {
             }
           >
             <FaProjectDiagram size={20} />
-            <span className="lg:flex hidden">Projeler</span>
+            <span className="lg:flex hidden">Projelerim</span>
             <span className="lg:hidden flex">P</span>
           </NavLink>
 

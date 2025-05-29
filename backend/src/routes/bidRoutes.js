@@ -5,7 +5,7 @@ const authMiddleware = require("../middlewares/authMiddleware");
 const { checkRole } = require("../middlewares/roleAuthMiddleware.js");
 const ROLES = require("../constants/roles.js");
 
-router.post('/', authMiddleware.verifyAccessToken, checkRole(ROLES.FREELANCER), bidController.createBid);
+router.post('/:projectId', authMiddleware.verifyAccessToken, checkRole(ROLES.FREELANCER), bidController.createBid);
 
 // Projeye gelen teklifleri görüntüleme (işveren için)
 router.get('/project/:projectId', authMiddleware.verifyAccessToken, checkRole(ROLES.EMPLOYER), bidController.getBidsByProject);

@@ -1,11 +1,13 @@
 const Bid = require("../models/Bid");
 const Project = require("../models/Project");
 const Notification = require("../models/Notification");
+const User = require("../models/User");
 
 //!Proje CRUD işlemleri
 const createBid = async (req, res) => {
   try {
-    const { projectId, amount, message } = req.body; //teklif verilerini alalum
+    const { projectId } = req.params; // URL parametresinden proje ID'sini al
+    const { amount, message } = req.body; // Body'dan teklif verilerini al
     const freelancerId = req.user._id; //giriş yapan freelancerımızı idsini de alalımm
 
     // Projeyi bulalımm
@@ -60,6 +62,49 @@ const createBid = async (req, res) => {
     // Projeye teklif eklendiği zaman projeyi güncelleki array içerisinde göreyüm
     project.bids.push(bid._id); // Oluşturulan teklif projeye ekleyelimm
     await project.save();
+
+    // Employer'a bildirim gönder
+    const io = req.app.get('io');
+
+    try {
+      // Freelancer bilgilerini al
+      const freelancer = await User.findById(freelancerId).select('name');
+
+      // Veritabanına bildirim kaydet
+      const notification = new Notification({
+        user: project.employer, // Bildirimi alacak employer
+        sender: freelancerId, // Bildirimi gönderen freelancer
+        senderUsername: freelancer?.name || "Freelancer",
+        roomId: project._id, // Proje ID'si room olarak kullanılacak
+        type: "bid", // Teklif türü bildirim
+        message: `"${project.title}" projenize ${freelancer?.name || 'Bir freelancer'} tarafından ${amount}₺ tutarında yeni bir teklif geldi!`,
+        link: `/employer-panel/projects/${project._id}`, // Proje detay sayfasına yönlendirme
+        isRead: false
+      });
+
+      await notification.save();
+
+      // Socket.io ile canlı bildirim gönder
+      if (io) {
+        io.emit("notification", {
+          _id: notification._id,
+          user: project.employer,
+          sender: freelancerId,
+          senderUsername: freelancer?.name || "Freelancer",
+          roomId: project._id,
+          type: "bid",
+          message: notification.message,
+          link: notification.link,
+          isRead: false,
+          createdAt: notification.createdAt
+        });
+      }
+
+      console.log(`📢 Teklif bildirimi gönderildi: ${project.title} - ${freelancer?.name}`);
+    } catch (notificationError) {
+      console.error("Bildirim oluşturulurken hata:", notificationError);
+      // Bildirim hatası ana işlemi etkilemesin
+    }
 
     res.status(201).json({
       success: true,
@@ -432,7 +477,16 @@ const rejectBid = async (req, res) => {
 const getMyBids = async (req, res) => {
   try {
     const userId = req.user._id;
-    const bids = await Bid.find({ freelancer: userId }).populate('project');
+    const bids = await Bid.find({ freelancer: userId })
+      .populate({
+        path: 'project',
+        populate: {
+          path: 'employer',
+          select: 'name email profileImage'
+        }
+      })
+      .sort({ createdAt: -1 }); // En yeni teklifler önce
+
     res.status(200).json({ success: true, data: bids });
   } catch (err) {
     console.error("Teklifler alınamadı:", err);
